@@ -16,7 +16,7 @@ I=imread('Data/0005_s.png'); % we have to be in the proper folder
 imshow(I)
 
 % ToDo: generate a matrix H which produces a similarity transformation
-H = get_similarity();
+
 I2 = apply_H(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
 
@@ -24,7 +24,7 @@ figure; imshow(I); figure; imshow(uint8(I2));
 %% 1.2. Affinities
 
 % ToDo: generate a matrix H which produces an affine transformation
-H = get_affinity();
+
 I2 = apply_H(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
 
@@ -42,7 +42,7 @@ figure; imshow(I); figure; imshow(uint8(I2));
 %% 1.3 Projective transformations (homographies)
 
 % ToDo: generate a matrix H which produces a projective transformation
-H = get_projectivity();
+
 I2 = apply_H(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
 
@@ -69,7 +69,7 @@ p7 = [A(i,1) A(i,2) 1]';
 p8 = [A(i,3) A(i,4) 1]';
 
 % ToDo: compute the lines l1, l2, l3, l4, that pass through the different pairs of points
-[l1, l2, l3, l4] = compute_lines();
+
 
 % show the chosen lines in the image
 figure;imshow(I);
@@ -86,7 +86,6 @@ I2 = apply_H(I, H);
 figure; imshow(uint8(I2));
 
 % ToDo: compute the transformed lines lr1, lr2, lr3, lr4
-[lr1, lr2, lr3, lr4] = compute_lines();
 
 % show the transformed lines in the transformed image
 figure;imshow(uint8(I2));
