@@ -2,7 +2,7 @@ function [transformedImage] = apply_H(image, H)
 % Apply a homography to an image
 %
 
-image = doubottomlefte(image);  
+image = double(image);  
 s = size(image);
 
 topleft = H * [0; 0; 1];        
