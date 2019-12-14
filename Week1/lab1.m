@@ -17,6 +17,17 @@
 I=imread('Data/0005_s.png'); % we have to be in the proper folder
 
 % ToDo: generate a matrix H which produces a similarity transformation
+% H is 3x3 metirx  H = [sR t; 0 1]
+% R is a rotation matrix (orthogonal matrix) = [ cos(theta) - sin(theta);
+% cos(theta) sin(theta)]
+s = 0.5; %isotropic scaling factor for scalated
+theta = pi/4; %the orientation angle for rotated
+% t is a translation vector example = [10 20]
+t_x = 0;
+t_y = 0;
+H = [(s*cosd(theta)) (-s*sind(theta)) t_x;
+     (s*sind(theta)) (s*cosd(theta)) t_y;
+     0 0 1];
 
 I2 = apply_H(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
@@ -25,6 +36,16 @@ figure; imshow(I); figure; imshow(uint8(I2));
 %% 1.2. Affinities
 
 % ToDo: generate a matrix H which produces an affine transformation
+% H is 3x3 H = [A t;0 1]
+% A is a non-singular 2 × 2 matrix let A = [0.5 1; 0 1]
+% t is a translation vector
+s = 0.5;
+theta = pi/4;
+t_x = 0;
+t_y = 0;
+H = [0.5 1 t_x;
+     0 1 t_y;
+     0 0 1];
 
 I2 = apply_H(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
