@@ -1,4 +1,4 @@
-function [transformedImage, x_min, y_min] = apply_H(image, H)
+function [transformedImage, x_min, y_min, x_max, y_max] = apply_H(image, H)
 % Apply a homography to an image
 %
 
@@ -20,6 +20,7 @@ y_min = round(min([topleft(2), topright(2), bottomleft(2), bottomright(2)]));
 x_max = round(max([topleft(1), topright(1), bottomleft(1), bottomright(1)]));
 y_max = round(max([topleft(2), topright(2), bottomleft(2), bottomright(2)]));
 out_size = [abs(x_max-x_min), abs(y_max-y_min), 3];
+%out_size = s;
 
 x = zeros(out_size(1) * out_size(2), 1);
 y = zeros(out_size(1) * out_size(2), 1);
@@ -30,9 +31,10 @@ transformedImage = zeros(out_size);
 for j = 1:out_size(2)
     for i = 1:out_size(1)
         p = H_inv * [i+x_min; j+y_min; 1];
-        idx = (out_size(1) * (j - 1)) + i;
-        x(idx) = p(1) / p(3);
-        y(idx) = p(2) / p(3);
+        %p = H_inv * [i; j; 1];
+        %idx = (out_size(1) * (j - 1)) + i;
+        %x(idx) = p(1) / p(3);
+        %y(idx) = p(2) / p(3);
         a = round(p(1)/p(3));
         b = round(p(2)/p(3));
         if a>= 1 && b>= 1 && a<=s(1) && b<=s(2)
@@ -40,6 +42,7 @@ for j = 1:out_size(2)
         end
     end
 end
+
 
 % ch1 = interp2(image(:,:,1), x, y);
 % ch2 = interp2(image(:,:,2), x, y);
