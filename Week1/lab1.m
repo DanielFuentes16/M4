@@ -72,6 +72,13 @@ p8 = [A(i,3) A(i,4) 1]';
 % ToDo: compute the lines l1, l2, l3, l4, that pass through the different pairs of points
 [l1, l2, l3, l4] = compute_lines(p1, p2, p3, p4, p5, p6, p7, p8);
 
+angle1 = compute_angle(l1, l2);
+angle2 = compute_angle(l3, l4);
+disp(angle1);
+disp(dot(l1, l2));
+disp(angle2);
+disp(dot(l3, l4));
+
 % show the chosen lines in the image
 figure;imshow(I);
 hold on;
@@ -88,7 +95,14 @@ I2 = apply_H(I, H);
 figure; imshow(uint8(I2));
 
 % ToDo: compute the transformed lines lr1, lr2, lr3, lr4
-[lr1, lr2, lr3, lr4] = compute_lines();
+[lr1, lr2, lr3, lr4] = compute_transformedLines();
+
+angle1 = compute_angle(lr1, lr2);
+angle2 = compute_angle(lr3, lr4);
+disp(angle1);
+disp(dot(lr1, lr2));
+disp(angle2);
+disp(dot(lr3, lr4));
 
 % show the transformed lines in the transformed image
 figure;imshow(uint8(I2));
