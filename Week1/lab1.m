@@ -73,25 +73,31 @@ p8 = [A(i,3) A(i,4) 1]';
 [l1, l2, l3, l4] = compute_lines(p1, p2, p3, p4, p5, p6, p7, p8);
 
 % show the chosen lines in the image
-figure;imshow(I);
+figure(1);
+imshow(I);
 hold on;
 t=1:0.1:1000;
 plot(t, -(l1(1)*t + l1(3)) / l1(2), 'y');
 plot(t, -(l2(1)*t + l2(3)) / l2(2), 'y');
 plot(t, -(l3(1)*t + l3(3)) / l3(2), 'y');
 plot(t, -(l4(1)*t + l4(3)) / l4(2), 'y');
-
 % ToDo: compute the homography that affinely rectifies the image
 H = get_affinity(l1, l2, l3, l4);
 I2 = apply_H(I, H);
 
-figure; imshow(uint8(I2));
+%figure; imshow(uint8(I2));
 
 % ToDo: compute the transformed lines lr1, lr2, lr3, lr4
-[lr1, lr2, lr3, lr4] = compute_lines();
+H_inv_t = inv(H');
+lr1 = H_inv_t*l1';
+lr2 = H_inv_t*l2';
+lr3 = H_inv_t*l3';
+lr4 = H_inv_t*l4';
 
 % show the transformed lines in the transformed image
-figure;imshow(uint8(I2));
+fa = figure();
+figure(fa)
+imshow(uint8(I2));
 hold on;
 t=1:0.1:1000;
 plot(t, -(lr1(1)*t + lr1(3)) / lr1(2), 'y');
