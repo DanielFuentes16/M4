@@ -289,6 +289,159 @@ compute_angle(lamr3, lamr4)
 %       the stratified method (affine + metric). 
 %       Crop the initial image so that only the left facade is visible.
 %       Show the (properly) transformed lines that are used in every step.
+clear;
+I = imread('Data/0001_s.png');
+A = load('Data/0001_s_info_lines.txt');
+
+% Crop the initial image so that only the left facade
+I = I(:,1:470,:); 
+
+% indices of lines
+i = 614; 
+i = 188; 
+p1 = [A(i,1) A(i,2) 1]'; 
+p2 = [A(i,3) A(i,4) 1]'; 
+i = 159; 
+p3 = [A(i,1) A(i,2) 1]'; 
+p4 = [A(i,3) A(i,4) 1]'; 
+i = 645; 
+p5 = [A(i,1) A(i,2) 1]'; 
+p6 = [A(i,3) A(i,4) 1]'; 
+i = 541; 
+p7 = [A(i,1) A(i,2) 1]'; 
+p8 = [A(i,3) A(i,4) 1]'; 
+
+% ToDo: compute the lines l1, l2, l3, l4, that pass through the different pairs of points
+    point1 = [p1(1) p1(2) 1];
+    point2 = [p2(1) p2(2) 1];
+    point3 = [p3(1) p3(2) 1];
+    point4 = [p4(1) p4(2) 1];
+    point5 = [p5(1) p5(2) 1];
+    point6 = [p6(1) p6(2) 1];
+    point7 = [p7(1) p7(2) 1];
+    point8 = [p8(1) p8(2) 1];
+
+    l1 = cross(point1, point2);
+    l2 = cross(point3, point4);
+    l3 = cross(point5, point6);
+    l4 = cross(point7, point8);
+
+
+% show lines 
+figure(1); imshow(I); title('Original');
+hold on;
+t=1:0.1:1000;
+plot(t, -(l1(1)*t + l1(3)) / l1(2), 'y');
+plot(t, -(l2(1)*t + l2(3)) / l2(2), 'y');
+plot(t, -(l3(1)*t + l3(3)) / l3(2), 'r');
+plot(t, -(l4(1)*t + l4(3)) / l4(2), 'r');
+
+% ToDo: compute the homography that affinely rectifies the image
+% compute vanishing points where lines cross at ininity
+v1 = cross(l1, l2);
+v2 = cross(l3, l4);
+
+% compute line that passes through vanishing points: line at infinite 
+l_inf = cross(v1, v2); 
+l_inf = l_inf / l_inf(3);
+
+% define H for affine rectification and apply to image
+H = [1 0 0; 0 1 0; l_inf(1) l_inf(2) 1];
+I_trans = apply_H(I, H);
+figure(2);imshow(uint8(I_trans)); title('Affine rectification');
+
+% ToDo: compute the transformed lines lr1, lr2, lr3, lr4
+% by using l' = H^(-T) * l
+vanishing_point1 = cross(l1,l2);
+vanishing_point1 = vanishing_point1/vanishing_point1(3);
+vanishing_point2 = cross(l3,l4);
+vanishing_point2 = vanishing_point2/ vanishing_point2(3);
+vanishing_line = cross(vanishing_point1,vanishing_point2);
+
+H = [1 0 0;
+     0 1 0; 
+     vanishing_line(1)/vanishing_line(3) vanishing_line(2)/vanishing_line(3) 1];
+% transformed points
+HP1 = H*p1; HP2 = H*p2; HP3 = H*p3; HP4 = H*p4;
+HP5 = H*p5; HP6 = H*p6; HP7 = H*p7; HP8 = H*p8;
+ 
+HP1 = HP1/HP1(3); HP2 = HP2/HP2(3); HP3 = HP3/HP3(3); HP4 = HP4/HP4(3);
+HP5 = HP5/HP5(3); HP6 = HP6/HP6(3); HP7 = HP7/HP7(3); HP8 = HP8/HP8(3);
+
+% transformed lines
+lr1 = cross(HP1,HP2);
+lr2 = cross(HP3,HP4);
+lr3 = cross(HP5,HP6);
+lr4 = cross(HP7,HP8);
+
+% show the transformed lines in the transformed image
+hold on;
+t=1:0.1:1000;
+plot(t, -(lr1(1)*t + lr1(3)) / lr1(2), 'y');
+plot(t, -(lr2(1)*t + lr2(3)) / lr2(2), 'y');
+plot(t, -(lr3(1)*t + lr3(3)) / lr3(2), 'r');
+plot(t, -(lr4(1)*t + lr4(3)) / lr4(2), 'r');
+
+% ToDo: to evaluate the results, compute the angle between the different pair 
+% of lines before and after the image transformation
+% calculate slopes of original lines
+s1 = l1(1) / l1(2); 
+s2 = l2(1) / l2(2);
+s3 = l3(1) / l3(2);
+s4 = l4(1) / l4(2);
+% calculate slope of rectified lines
+sr1 = lr1(1) / lr1(2); 
+sr2 = lr2(1) / lr2(2);
+sr3 = lr3(1) / lr3(2);
+sr4 = lr4(1) / lr4(2);
+
+% angles between "parallel" original lines
+a12 = rad2deg( atan(s1) - atan(s2) ); % a12 = 0.0992
+a34 = rad2deg( atan(s3) - atan(s4) ); % a34 = -1.3435
+sprintf('Angles between yellow and red lines %f, %f', a12, a34)
+% angles of really parallel rectified lines
+ar12 = rad2deg( atan(sr1) - atan(sr2) ); % ar12 = -7.9514e-16 (almost 0)
+ar34 = rad2deg( atan(sr3) - atan(sr4) ); % ar34 = 0
+sprintf('Angles between yellow and red lines (after rectification) %f, %f', ...
+  ar12, ar34)
+
+% Orthogonal pair of lines (l1,r1) and (l2,m2)
+l1 = lr1;
+m1 = lr3;
+l2 = lr2;
+m2 = lr4;
+
+A = [ l1(1)*m1(1), l1(1)*m1(2)+l1(2)*m1(1), l1(2)*m1(2);
+      l2(1)*m2(1), l2(1)*m2(2)+l2(2)*m2(1), l2(2)*m2(2) ];
+ 
+% A = [l1(1)*m1(1),   l1(1)*m1(2)+l1(2)*m1(1),    l1(2)*m1(2)];
+
+s = null(A);
+S = [ s(1), s(2); s(2), s(3) ] / s(3);
+
+% Apply Cholesky factorization
+K = chol(S); 
+H = eye(3);
+K = inv(K); 
+H(1:2,1:2) = K;
+H = H';
+
+% ToDo: compute the transformed lines lr1, lr2, lr3, lr4
+% l' = H^(-T) * l
+lr1 = H' \ l1; lr1 = lr1 / lr1(3);
+lr2 = H' \ l2; lr2 = lr2 / lr2(3);
+m1r = H' \ m1; m1r = m1r / m1r(3);
+m2r = H' \ m2; m2r = m2r / m2r(3);
+
+% show transformed lines
+I3 = apply_H(uint8(I_trans), H);
+figure(3);imshow(uint8(I3)); title('Metric rectification');
+hold on;
+t=1:0.1:10000;
+plot(t, -(lr1(1)*t + lr1(3)) / lr1(2), 'y');
+plot(t, -(lr2(1)*t + lr2(3)) / lr2(2), 'y');
+plot(t, -(m1r(1)*t + m1r(3)) / m1r(2), 'r');
+plot(t, -(m2r(1)*t + m2r(3)) / m2r(2), 'r');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 5. OPTIONAL: Metric Rectification in a single step
