@@ -12,31 +12,69 @@
 
 
 %% 1.1. Similarities
-%I=imread('Data/0005_s.png'); % we have to be in the proper folder
-%imshow(I)
-
+I=imread('Data/0005_s.png'); % we have to be in the proper folder
 
 % ToDo: generate a matrix H which produces a similarity transformation
-%H = get_similarity();
-%I2 = apply_H(I, H);
-%figure; imshow(I); figure; imshow(uint8(I2));
+% H is 3x3 metirx  H = [sR t; 0 1]
+% R is a rotation matrix (orthogonal matrix) = [ cos(theta) - sin(theta);
+% cos(theta) sin(theta)]
+% t is a translation vector
+t = [0;0];
+s = 0.5; %isotropic scaling factor for scalated
+theta = 15; %the orientation angle for rotated
+H = [(s*cosd(theta)) (-s*sind(theta)) t_x;
+     (s*sind(theta)) (s*cosd(theta)) t_y;
+     0 0 1];
+
+I2 = apply_H(I, H);
+figure; imshow(I);title('original');
+figure; imshow(uint8(I2));title('Similarities');
 
 
 %% 1.2. Affinities
 
 % ToDo: generate a matrix H which produces an affine transformation
-%H = get_affinity(I); 
-%I2 = apply_H(I, H);
-%figure; imshow(I); figure; imshow(uint8(I2));
+% H is 3x3 H = [A t;0 1]
+% A is a non-singular 2 × 2 matrix let A = [0.5 1; 1 0]
+% t is a translation vector
+s = 0.5;
+theta = pi/4;
+t = [0;0];
+A = [0 1;1 0];
+H = [0 1 t(1);
+     1 0 t(2);
+     0 0 1];
+
+I2 = apply_H(I, H);
+figure; imshow(uint8(I2));title(' Affinities');
 
 % ToDo: decompose the affinity in four transformations: two
 % rotations, a scale, and a translation
+% SVD U-left singular vetors,V-right singular vetors D-diagonal metrix
+[U,D,V] = svd(A);
+Rtheta = U*V';
+Rphi = V';
+rotation_1 = [Rtheta(1,:) 0;Rtheta(2,:) 0;0 0 1];
+rotation_2 = [Rphi(1,:) 0;Rphi(2,:) 0;0 0 1];
+% scale
+scale = [D(1,1) 0 0;0 D(2,2) 0;0 0 1];
+% translation
+translation = [1 0 t(1);0 1 t(2);0 0 1];
+
+H_decompose= translation*(rotation_1*rotation_2*scale*rotation_2');
 
 % ToDo: verify that the product of the four previous transformations
 % produces the same matrix H as above
-
+if(sum(round(H_decompose(:)-H(:)))) == 0
+    disp('matrix H & H_decompose are equal');
+else
+    disp('matrix H & H_decompose are not equal');
+end
 % ToDo: verify that the proper sequence of the four previous
 % transformations over the image I produces the same image I2 as before
+I2_decompose = apply_H(I, H_decompose);
+figure; imshow(uint8(I2_decompose));title('affine_decompose');
+
 
 
 
