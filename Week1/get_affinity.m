@@ -11,4 +11,5 @@ vanishing_line = cross(vanishing_point1,vanishing_point2);
 H = [1 0 0;
      0 1 0; 
      vanishing_line(1)/vanishing_line(3) vanishing_line(2)/vanishing_line(3) 1];
+ 
 end
