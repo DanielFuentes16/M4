@@ -49,7 +49,7 @@ MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include<math.h>
 #include<assert.h>
 
-#include<mexutils.c>
+#include"mexutils.c"
 
 #define greater(a,b)  ((a)>(b))
 #define min(a,b)     (((a)<(b))?(a):(b))

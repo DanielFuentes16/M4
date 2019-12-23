@@ -44,7 +44,7 @@ MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 */
 
 #include"mex.h"
-#include<mexutils.c>
+#include"mexutils.c"
 #include<stdlib.h>
 
 /** Matlab driver.
