@@ -44,16 +44,16 @@ function idx_inliers = compute_inliers(H, x1, x2, th)
     end
     
     % compute the symmetric geometric error % ToDo 
-    d2 = [];
+    x1 = normalise(x1);
+    x2 = normalise(x2);
+    x1p = normalise(H * x1);
+    x2p = normalise(inv(H) * x2);
+
+    d1 = (x1p - x2).^2;
+    d2 = (x1 - x2p).^2;
     
-    for i = 1:length(x1)
-        x1Hat = H * x2(:,i);
-        x2Hat = H\x1(:,i); % Equivalent inv(H)*x1(:,i)
-        dx1 = (x1(1,i)/x1(3,i) - x1Hat(1)/x1Hat(3))^2 + (x1(2,i)/x1(3,i) - x1Hat(2)/x1Hat(3))^2;
-        dx2 = (x2(1,i)/x2(3,i) - x2Hat(1)/x2Hat(3))^2 + (x2(2,i)/x2(3,i) - x2Hat(2)/x2Hat(3))^2; 
-        d2(i) = (dx1^2 + dx2^2);
-    end
-   
+    d2 = sum(d1(1:2,:) + d2(1:2,:), 1);
+    
     idx_inliers = find(d2 < th.^2);
 
 
