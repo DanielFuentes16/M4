@@ -8,29 +8,41 @@ addpath('sift');
 %% 1. Compute image correspondences
 
 %% Open images
+%1 for llanes
+%2 for castle
+%3 for aerial 1
+%4 for aerial 2
+image = 1;
 
-imargb = imread('Data/llanes/llanes_a.jpg');
-imbrgb = imread('Data/llanes/llanes_b.jpg');
-imcrgb = imread('Data/llanes/llanes_c.jpg');
+if image == 1
+    imargb = imread('Data/llanes/llanes_a.jpg');
+    imbrgb = imread('Data/llanes/llanes_b.jpg');
+    imcrgb = imread('Data/llanes/llanes_c.jpg');
+elseif image == 2
+    imargb = imread('Data/castle_int/0016_s.png');
+    imbrgb = imread('Data/castle_int/0015_s.png');
+    imcrgb = imread('Data/castle_int/0014_s.png');
+elseif image == 3
+    imargb = imread('Data/aerial/site13/frame00000.png');
+    imbrgb = imread('Data/aerial/site13/frame00002.png');
+    imcrgb = imread('Data/aerial/site13/frame00003.png');
+else
+    imargb = double(imread('Data/aerial/site22/frame_00001.tif'));
+    imbrgb = double(imread('Data/aerial/site22/frame_00018.tif'));
+    imcrgb = double(imread('Data/aerial/site22/frame_00030.tif'));
+end
 
-%imargb = imread('Data/castle_int/0016_s.png');
-%imbrgb = imread('Data/castle_int/0015_s.png');
-%imcrgb = imread('Data/castle_int/0014_s.png');
+if (image == 1)||(image == 2)||(image == 3)
+    ima = sum(double(imargb), 3) / 3 / 255;
+    imb = sum(double(imbrgb), 3) / 3 / 255;
+    imc = sum(double(imcrgb), 3) / 3 / 255;
+else
+    ima = imargb;
+	imb = imbrgb;
+	imc = imcrgb;
+end
 
-%imargb = imread('Data/aerial/site13/frame00000.png');
-%imbrgb = imread('Data/aerial/site13/frame00002.png');
-%imcrgb = imread('Data/aerial/site13/frame00003.png');
 
-ima = sum(double(imargb), 3) / 3 / 255;
-imb = sum(double(imbrgb), 3) / 3 / 255;
-imc = sum(double(imcrgb), 3) / 3 / 255;
-
-% imargb = double(imread('Data/aerial/site22/frame_00001.tif'));
-% imbrgb = double(imread('Data/aerial/site22/frame_00018.tif'));
-% imcrgb = double(imread('Data/aerial/site22/frame_00030.tif'));
-%ima = imargb;
-%imb = imbrgb;
-%imc = imcrgb;
 
 %% Compute SIFT keypoints
 [points_a, desc_a] = sift(ima, 'Threshold', 0.01);
@@ -323,10 +335,72 @@ end
 %% 6. OPTIONAL: Detect the UPF logo in the two UPF images using the 
 %%              DLT algorithm (folder "logos").
 %%              Interpret and comment the results.
+imgLogoSrc = imread('Data/logos/logoUPF.png');
+imgLogoSrc2 = imread('Data/logos/logo_master.png');
+
+% 1 for stand, 2 for building
+dstImg = 1;
+if dstImg == 1
+    imgLogoDst = imread('Data/logos/UPFstand.jpg');
+else 
+    imgLogoDst = imread('Data/logos/UPFbuilding.jpg');
+end
+
+imgSrc = sum(double(imgLogoSrc), 3) / 3 / 255;
+imgDst = sum(double(imgLogoDst), 3) / 3 / 255;
+
+%Calculate keypoints
+[pointsSrc, descrSrc] = sift(imgSrc, 'Threshold', 0.01);
+if dstImg == 1
+    [pointsDst, descrDst] = sift(imgDst, 'Threshold', 0.01);
+else 
+    [pointsDst, descrDst] = sift(imgDst, 'Threshold', 0.045);
+end
+
+%Plot keypoints on source logo
+figure;
+imshow(imgLogoSrc);
+hold on;
+plot(pointsSrc(1,:), pointsSrc(2,:),'+y');
+
+%Plot keypoins on destination image
+figure;
+imshow(imgLogoDst);
+hold on;
+plot(pointsDst(1,:), pointsDst(2,:),'+y');
+
+%Keypoint matching
+matchKeypoints = siftmatch(descrSrc, descrDst);
+
+%Plot matching of logo keypoints on image
+figure;
+plotmatches(imgSrc, imgDst, pointsSrc(1:2,:), pointsDst(1:2,:), matchKeypoints, 'Stacking', 'v');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 7. OPTIONAL: Replace the logo of the UPF by the master logo
 %%              in one of the previous images using the DLT algorithm.
+imgLogoSrc2 = imresize(imgLogoSrc2, size(imgLogoSrc(:,:,3)));
 
+%Compute the homography 
+relSrc = [pointsSrc(1:2, matchKeypoints(1,:)); ones(1, length(matchKeypoints))];
+relDst = [pointsDst(1:2, matchKeypoints(2,:)); ones(1, length(matchKeypoints))];
+[Hres, inliersRes] = ransac_homography_adaptive_loop(relSrc, relDst, th, 1000); 
 
+figure;
+plotmatches(imgSrc, imgDst, pointsSrc(1:2,:), pointsDst(1:2,:), ...
+    matchKeypoints(:,inliersRes), 'Stacking', 'v');
+
+%vgg_gui_H(imgLogoSrc, imgLogoDst, Hres);
+
+if dstImg == 1
+    corners = [0 502 0 550];
+else 
+    corners = [0 1483 0 1795];
+end
+resDst = apply_H_v2(imgLogoDst, diag(ones(1,3)), corners);
+resSrc = apply_H_v2(imgLogoSrc2, Hres, corners);
+
+figure;
+imshow(max(resSrc, resDst));
+title('Master logo on destination');
 
