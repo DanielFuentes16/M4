@@ -70,7 +70,7 @@ plotmatches(imb, imc, points_b(1:2,:), points_c(1:2,:), matches_bc, 'Stacking', 
 %% 2. Compute the homography (DLT algorithm) between image pairs
 
 %% Compute homography (normalized DLT) between a and b, play with the homography
-th = 3;
+th = 5.99;
 tic
 xab_a = [points_a(1:2, matches_ab(1,:)); ones(1, length(matches_ab))];
 xab_b = [points_b(1:2, matches_ab(2,:)); ones(1, length(matches_ab))];

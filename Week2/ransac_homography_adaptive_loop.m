@@ -25,8 +25,11 @@ while it < max_it
     p=0.99;
     max_it = log(1-p)/log(pNoOutliers);
     
-    it = it + 1
+    it = it + 1;
 end
+
+% Print the it
+it
 
 % compute H from all the inliers
 H = homography2d(x1(:,best_inliers), x2(:,best_inliers));
