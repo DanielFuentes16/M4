@@ -1,15 +1,9 @@
-function E = gs_errfunction(P0, Xobs)
+function Error = gs_errfunction(P0, Xobs)
     
-    H  = reshape(P0(1:9),3,3);
-    
-    Xobs = reshape (Xobs,2,[]);
-    x = [Xobs(:,1:size(Xbos,2)/2); ones(1,size(Xbos,2)/2)];
-    xp = [Xobs(:, size(Xbos,2)/2+1:end); ones(1,size(Xbos,2)/2)];
-    
-    xh = P0(9+1:end);
-    xhe = [xh(1: length(xh)/2),xh(length(xh)/2+1:end),ones(length(xh)/2,1)];
-    xhp = H*xhe';
-    
-    E = sum((x-xhe).^2)+sum((xp-xhp').^2);
+    H = reshape(P0(1:9), 3, 3);
+    x1 = reshape(Xobs(1:(length(Xobs)/2)), 2, length(Xobs)/4);
+    x2 = reshape(Xobs(((length(Xobs)/2)+1):end), 2, length(Xobs)/4);
+
+    Error= [x2 - euclid(H*[x1; ones(1, length(Xobs)/4)]), x1 - euclid(H\[x2; ones(1, length(Xobs)/4)])];
    
 end
