@@ -273,23 +273,56 @@ for i = 1:N
     x1 = pointsT(1:2, matches(1, :));
     x2 = points{i}(1:2, matches(2, :));
     H{i} = 0;
-    [H{i}, inliers] =  ransac_homography_adaptive_loop(homog(x1), homog(x2), 3, 1000);
+    
+    x1_homog = [x1; ones(1, size(x1, 2))];
+    x2_homog = [x2; ones(1, size(x2, 2))];
 
+    [H{i}, inliers] =  ransac_homography_adaptive_loop(x1_homog, x2_homog, 3, 1000); 
+    
     % Plot inliers.
     figure;
     plotmatches(Tg, Ig{i}, pointsT(1:2,:), points{i}(1:2,:), matches(:, inliers));
-
     % Play with the homography
-    %vgg_gui_H(T, I{i}, H{i});
+    vgg_gui_H(T, I{i}, H{i});
 end
 
 %% Compute the Image of the Absolute Conic
 
-%%w = ... % ToDo
+for k = 1:N
+   v{k} = ones(2, 2, 6);
+   h = H{k};
+   for i=1:2
+      for j=1:2
+          v{k}(i,j,:) = [
+              h(1,i)*h(1,j), 
+              h(1,i)*h(2,j) + h(2,i)*h(1,j),
+              h(1,i)*h(3,j) + h(3,i)*h(1,j),
+              h(2,i)*h(2,j),
+              h(2,i)*h(3,j)+h(3,i)*h(2,j),
+              h(3,i)*h(3,j)];
+      end
+   end
+end
+
+A = [reshape(v{1}(1,2,:), [1 6]);
+    reshape(v{1}(1,1,:)-v{1}(2,2,:), [1 6]);
+    reshape(v{2}(1,2,:), [1 6]);
+    reshape(v{2}(1,1,:)-v{2}(2,2,:), [1 6]);
+    reshape(v{3}(1,2,:), [1 6]);
+    reshape(v{3}(1,1,:)-v{1}(2,2,:), [1 6])];
+
+[U,D,V] = svd(A,0);
+x = V(:,end);
+
+w = [x(1) x(2) x(3); x(2) x(4) x(5); x(3) x(5) x(6)] ;
  
 %% Recover the camera calibration.
 
-%%K = ... % ToDo
+[K_inv, flag] = chol(w);
+if flag~=0
+   K_inv = chol(w*(-1));
+end
+K = inv(K_inv);
     
 % ToDo: in the report make some comments related to the obtained internal
 %       camera parameters and also comment their relation to the image size
@@ -301,9 +334,9 @@ P = cell(N,1);
 figure;hold;
 for i = 1:N
     % ToDo: compute r1, r2, and t{i}
-    %%r1 = ...
-    %%r2 = ...
-    %%t{i} = ...
+    r1 = K_inv*H{i}(:,1);
+    r2 = K_inv*H{i}(:,2);
+    t{i} = K_inv*H{i}(:,3);
     
     % Solve the scale ambiguity by forcing r1 and r2 to be unit vectors.
     s = sqrt(norm(r1) * norm(r2)) * sign(t{i}(3));
@@ -323,25 +356,40 @@ end
 % ToDo: in the report explain how the optical center is computed in the
 %       provided code
 
-[ny,nx] = size(T);
+[ny,nx] = size(T)
 p1 = [0 0 0]';
 p2 = [nx 0 0]';
 p3 = [nx ny 0]';
 p4 = [0 ny 0]';
 % Draw planar pattern
-vgg_scatter_plot([p1 p2 p3 p4 p1], 'g');
+vgg_scatter_plot([p1 p2 p3 p4 p1], 'g'); 
 % Paint image texture
 surface('XData',[0 nx; 0 nx],'YData',[0 0; 0 0],'ZData',[0 0; -ny -ny],'CData',T,'FaceColor','texturemap');
 colormap(gray);
 axis equal;
 
-%% Plot a static camera with moving calibration pattern.
+% %% Plot a static camera with moving calibration pattern.
 figure; hold;
 plot_camera(K * eye(3,4), 800, 600, 200);
 % ToDo: complete the call to the following function with the proper
 %       coordinates of the image corners in the new reference system
 for i = 1:N
-    %%vgg_scatter_plot( [...   ...   ...   ...   ...], 'r');
+    height = size(I{i}, 2);
+    width = size(I{i}, 1);
+    H_inv = inv(H{i});
+    p1 = H_inv * [0 0 1]';
+    p1 = p1 / p1(3);
+    p1(3) = 0;
+    p2 = H_inv * [width 0 1]';
+    p2 = p2 / p2(3);
+    p2(3) = 0;
+    p3 = H_inv * [width height 1]';
+    p3 = p3 / p3(3);
+    p3(3) = 0;
+    p4 = H_inv * [0 height 1]';
+    p4 = p4 / p4(3);
+    p4(3) = 0;
+    vgg_scatter_plot( [p1 p2 p3 p4 p1], 'r');
 end
 
 %% Augmented reality: Plot some 3D points on every camera.
@@ -354,7 +402,8 @@ for i = 1:N
     figure; colormap(gray);
     imagesc(Ig{i});
     hold on;
-    x = euclid(P{i} * homog(X));
+    X_homog = [X; ones(1, size(X, 2))];
+    x = euclid(P{i} * X_homog);
     vgg_scatter_plot(x, 'g');
 end
 
