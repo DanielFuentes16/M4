@@ -456,6 +456,7 @@ imgLogoSrc2 = imresize(imgLogoSrc2, size(imgLogoSrc(:,:,3)));
 %Compute the homography 
 relSrc = [pointsSrc(1:2, matchKeypoints(1,:)); ones(1, length(matchKeypoints))];
 relDst = [pointsDst(1:2, matchKeypoints(2,:)); ones(1, length(matchKeypoints))];
+th=3;
 [Hres, inliersRes] = ransac_homography_adaptive_loop(relSrc, relDst, th, 1000); 
 
 figure;
