@@ -279,11 +279,11 @@ for i = 1:N
 
     [H{i}, inliers] =  ransac_homography_adaptive_loop(x1_homog, x2_homog, 3, 1000); 
     
-    % Plot inliers.
-    figure;
-    plotmatches(Tg, Ig{i}, pointsT(1:2,:), points{i}(1:2,:), matches(:, inliers));
-    % Play with the homography
-    vgg_gui_H(T, I{i}, H{i});
+%     % Plot inliers.
+%     figure;
+%     plotmatches(Tg, Ig{i}, pointsT(1:2,:), points{i}(1:2,:), matches(:, inliers));
+%     % Play with the homography
+%     vgg_gui_H(T, I{i}, H{i});
 end
 
 %% Compute the Image of the Absolute Conic
@@ -309,7 +309,7 @@ A = [reshape(v{1}(1,2,:), [1 6]);
     reshape(v{2}(1,2,:), [1 6]);
     reshape(v{2}(1,1,:)-v{2}(2,2,:), [1 6]);
     reshape(v{3}(1,2,:), [1 6]);
-    reshape(v{3}(1,1,:)-v{1}(2,2,:), [1 6])];
+    reshape(v{3}(1,1,:)-v{3}(2,2,:), [1 6])];
 
 [U,D,V] = svd(A,0);
 x = V(:,end);
@@ -318,9 +318,9 @@ w = [x(1) x(2) x(3); x(2) x(4) x(5); x(3) x(5) x(6)] ;
  
 %% Recover the camera calibration.
 
-[K_inv, flag] = chol(w);
+[K_inv, flag] = chol(w)
 if flag~=0
-   K_inv = chol(w*(-1));
+   K_inv = chol(w*(-1))
 end
 K = inv(K_inv);
     
@@ -340,9 +340,9 @@ for i = 1:N
     
     % Solve the scale ambiguity by forcing r1 and r2 to be unit vectors.
     s = sqrt(norm(r1) * norm(r2)) * sign(t{i}(3));
-    r1 = r1 / s;
-    r2 = r2 / s;
-    t{i} = t{i} / s;
+    r1 = r1 / s
+    r2 = r2 / s
+    t{i} = t{i} / s
     R{i} = [r1, r2, cross(r1,r2)];
     
     % Ensure R is a rotation matrix
@@ -356,7 +356,7 @@ end
 % ToDo: in the report explain how the optical center is computed in the
 %       provided code
 
-[ny,nx] = size(T)
+[ny,nx] = size(T);
 p1 = [0 0 0]';
 p2 = [nx 0 0]';
 p3 = [nx ny 0]';
@@ -374,21 +374,15 @@ plot_camera(K * eye(3,4), 800, 600, 200);
 % ToDo: complete the call to the following function with the proper
 %       coordinates of the image corners in the new reference system
 for i = 1:N
+    
     height = size(I{i}, 2);
     width = size(I{i}, 1);
-    H_inv = inv(H{i});
-    p1 = H_inv * [0 0 1]';
-    p1 = p1 / p1(3);
-    p1(3) = 0;
-    p2 = H_inv * [width 0 1]';
-    p2 = p2 / p2(3);
-    p2(3) = 0;
-    p3 = H_inv * [width height 1]';
-    p3 = p3 / p3(3);
-    p3(3) = 0;
-    p4 = H_inv * [0 height 1]';
-    p4 = p4 / p4(3);
-    p4(3) = 0;
+    
+    p1 = [R{i} t{i}] * [0 0 0 1]'
+    p2 = [R{i} t{i}] * [width 0 0 1]'
+    p3 = [R{i} t{i}] * [width height 0 1]'
+    p4 = [R{i} t{i}] * [0 height 0 1]'
+    
     vgg_scatter_plot( [p1 p2 p3 p4 p1], 'r');
 end
 
