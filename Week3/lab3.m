@@ -2,7 +2,7 @@
 %% Lab 3: The geometry of two views 
 % (application: photo-sequencing)
 
-addpath('../Week2/..sift'); % ToDo: change 'sift' to the correct path where you have the sift functions
+addpath('../Week2/sift'); % ToDo: change 'sift' to the correct path where you have the sift functions
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 1. Compute the fundamental matrix
