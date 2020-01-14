@@ -4,7 +4,7 @@
 
 close all;
 clear;
-addpath('../Week2/sift'); % ToDo: change 'sift' to the correct path where you have the sift functions
+addpath('sift'); % ToDo: change 'sift' to the correct path where you have the sift functions
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 1. Compute the fundamental matrix
@@ -247,3 +247,127 @@ plot(pi4(1)/pi4(3), pi4(2)/pi4(3), 'g*');
 %     Photo-sequencing paper with a selection of the detected dynamic
 %     features. You may reuse the code generated for the previous question.
 %
+clear all;
+
+% Read images
+im1rgb = imread('Data/car1.png');
+im2rgb = imread('Data/car2.png');
+im3rgb = imread('Data/car3.png');
+im4rgb = imread('Data/car4.png');
+
+im1 = sum(double(im1rgb), 3) / 3 / 255;
+im2 = sum(double(im2rgb), 3) / 3 / 255;
+im3 = sum(double(im3rgb), 3) / 3 / 255;
+im4 = sum(double(im4rgb), 3) / 3 / 255;
+
+% show images
+figure;
+subplot(2,2,1); imshow(im1rgb); axis image; title('Image 1');
+subplot(2,2,2); imshow(im2rgb); axis image; title('Image 2');
+subplot(2,2,3); imshow(im3rgb); axis image; title('Image 3');
+subplot(2,2,4); imshow(im4rgb); axis image; title('Image 4');
+
+% Compute SIFT keypoints
+[points_1, desc_1] = sift(im1, 'Threshold', 0.015); % Do not change this threshold!
+[points_2, desc_2] = sift(im2, 'Threshold', 0.015);
+[points_3, desc_3] = sift(im3, 'Threshold', 0.015);
+[points_4, desc_4] = sift(im4, 'Threshold', 0.015);
+
+%Plot keypoints on source car
+figure;
+imshow(im1);
+hold on;
+plot(points_1(1,:), points_1(2,:),'+y');
+
+%Plot keypoints on source car
+figure;
+imshow(im2);
+hold on;
+plot(points_2(1,:), points_2(2,:),'+y');
+
+%Plot keypoints on source car
+figure;
+imshow(im3);
+hold on;
+plot(points_3(1,:), points_3(2,:),'+y');
+
+%Plot keypoints on source car
+figure;
+imshow(im4);
+hold on;
+plot(points_4(1,:), points_4(2,:),'+y');
+
+%%
+%Compute matches between images
+
+sm12 = siftmatch(desc_1, desc_2);
+sm13 = siftmatch(desc_1, desc_3);
+sm14 = siftmatch(desc_1, desc_4);
+
+p12 = [points_1(1:2, sm12(1,:)); ones(1, length(sm12))];
+p21 = [points_2(1:2, sm12(2,:)); ones(1, length(sm12))];
+p13 = [points_1(1:2, sm13(1,:)); ones(1, length(sm13))];
+p31 = [points_3(1:2, sm13(2,:)); ones(1, length(sm13))];
+p14 = [points_1(1:2, sm14(1,:)); ones(1, length(sm14))];
+p41 = [points_4(1:2, sm14(2,:)); ones(1, length(sm14))];
+
+% Fundamental matrix between each image and reference
+th = 2.0;
+[F12, in12] = ransac_fundamental_matrix(p12, p21, th, 100); 
+[F13, in13] = ransac_fundamental_matrix(p13, p31, th, 100); 
+[F14, in14] = ransac_fundamental_matrix(p14, p41, th, 100); 
+
+idx_alonso_I1 = 151;
+idx_alonso_I2 = sm12(2,sm12(1,:)==idx_alonso_I1);% ToDo: identify the corresponding point of idx_car_I1 in image 2
+idx_alonso_I3 = sm13(2,sm13(1,:)==idx_alonso_I1);% ToDo: identify the corresponding point of idx_car_I1 in image 3
+idx_alonso_I4 = sm13(2,sm13(1,:)==idx_alonso_I1);% ToDo: identify the corresponding point of idx_car_I1 in image 4
+
+% coordinates (in image 1) of the keypoint idx_alonso_I1 (point in alonso's car). 
+% point1_1 is the projection of a 3D point in the 3D trajectory of the
+% car
+point1_1 = [points_1(1:2,idx_alonso_I1)' 1]';
+% coordinates (in image 1) of another 3D point in the same 3D trajectory of
+% the car
+%point1_2 = [140 89 1]'; % 
+point1_2 = [160 52 1]'; %
+
+% l1 is the projection of the 3D trajectory of keypoint idx_alonso_I1
+% (it is the line that joins point1_1 and point1_2)
+l1 = cross(point1_1, point1_2);
+% plot the line
+figure;imshow(im1);
+hold on;
+t=1:0.1:1000;
+plot(t, -(l1(1)*t + l1(3)) / l1(2), 'y');
+plot(points_1(1,152), points_1(2,152), 'y*');
+
+% ToDo: write the homogeneous coordinates of the corresponding point of idx_alonso_I1 in image 2
+point2 = [points_2(1:2,idx_alonso_I2)' 1]';%
+% ToDo: compute the epipolar line of point2 in the reference image
+l2 = F12'*point2;%
+% plot the epipolar line
+plot(t, -(l2(1)*t + l2(3)) / l2(2), 'c');
+% ToDo: compute the projection of point idx_alonso_I2 in the reference image 
+pi2 =  cross(l1,l2);%
+% plot this point
+plot(pi2(1)/pi2(3), pi2(2)/pi2(3), 'c*');
+
+% ToDo: write the homogeneous coordinates of the corresponding point of idx_alonso_I1 in image 3
+point3 = [points_3(1:2,idx_alonso_I3)' 1]';%
+% ToDo: compute the epipolar line of point3 in the reference image
+l3 = F13'*point3;%
+% plot the epipolar line
+plot(t, -(l3(1)*t + l3(3)) / l3(2), 'b');
+% ToDo: compute the projection of point idx_alonso_I3 in the reference image
+pi3 = cross(l1,l3);%
+plot(pi3(1)/pi3(3), pi3(2)/pi3(3), 'b*');
+
+% ToDo: write the homogeneous coordinates of the corresponding point of idx_alonso_I1 in image 4
+point4 = [points_4(1:2,idx_alonso_I4)' 1]';%
+% ToDo: compute the epipolar line of point4 in the reference image
+l4 = F14'*point4;%
+% plot the epipolar line
+plot(t, -(l4(1)*t + l4(3)) / l4(2), 'g');
+% ToDo: compute the projection of point idx_car_I4 in the reference image
+pi4 = cross(l1,l4);%
+plot(pi4(1)/pi4(3), pi4(2)/pi4(3), 'g*');
