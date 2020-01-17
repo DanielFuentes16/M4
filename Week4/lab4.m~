@@ -3,7 +3,8 @@
 
 
 addpath('sift'); % ToDo: change 'sift' to the correct path where you have the sift functions
-
+close all;
+clc;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 1. Triangulation
 
@@ -102,20 +103,26 @@ P1 = K * eye(3, 4);
 
 % ToDo: write the four possible matrices for the second camera
 [U, D, V] = svd(E);
-Tprime = U(:, 4);
+Tprime = U(:, 3);
 W = [0 -1 0;
      1 0 0;
      0 0 1];
-Ruwv = U * W * V;
-Ruwtv = U * W' * V;
+Ruwv = U * W * V';
+Ruwtv = U * W' * V';
 
+if det(Ruwv) < 0
+     Ruwv = -Ruwv;
+end
 
+if det(Ruwtv) < 0
+     Ruwtv = -Ruwtv;
+end
 
 Pc2 = {};
 Pc2{1} = K * [Ruwv Tprime];
 Pc2{2} = K * [Ruwv -Tprime];
 Pc2{3} = K * [Ruwtv Tprime];
-Pc2{4} = K * [Ruwv -Tprime];
+Pc2{4} = K * [Ruwtv -Tprime];
 
 % HINT: You may get improper rotations; in that case you need to change
 %       their sign.
@@ -135,7 +142,15 @@ plot_camera(Pc2{4},w,h);
 
 %% Reconstruct structure
 % ToDo: Choose a second camera candidate by triangulating a match.
-%P2 = ...
+for i = 1:4
+    currentTriangulation = triangulate(x1, x2, P1, Pc2{i}, [w h]);
+    currentProjection = P1 * currentTriangulation;
+    currentProjectionPrime = Pc2{i} * currentTriangulation;
+    isResult = currentProjection(3)>=0 && currentProjectionPrime(3)>=0;
+    if(isResult)
+        P2 = Pc2{i};
+    end
+end 
 
 % Triangulate all matches.
 N = size(x1,2);
@@ -156,15 +171,27 @@ plot_camera(P1,w,h);
 plot_camera(P2,w,h);
 for i = 1:length(Xe)
     scatter3(Xe(1,i), Xe(3,i), -Xe(2,i), 5^2, [r(i) g(i) b(i)]/255, 'filled');
-end;
+end
 axis equal;
 
-
+close all;
 %% Compute reprojection error.
 
 % ToDo: compute the reprojection errors
 %       plot the histogram of reprojection errors, and
 %       plot the mean reprojection error
+
+
+
+x1Hat = euclid(P1 * X);
+x2Hat = euclid(P2 * X);
+d1 = (x1Hat - x1).^2;
+d2 = (x2 - x2Hat).^2;
+   
+d2 = sqrt(sum(d1, 1)) + sqrt(sum(d2, 1));
+
+figure;
+histogram(d2)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 3. Depth map computation with local methods (SSD)

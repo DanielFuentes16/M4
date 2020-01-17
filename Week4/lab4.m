@@ -76,7 +76,7 @@ inlier_matches = matches(:, inliers);
 figure;
 plotmatches(I{1}, I{2}, points{1}, points{2}, inlier_matches, 'Stacking', 'v');
 
-x1 = points{1}(:, inlier_matches(1, :))
+x1 = points{1}(:, inlier_matches(1, :));
 x2 = points{2}(:, inlier_matches(2, :));
 
 %vgg_gui_F(Irgb{1}, Irgb{2}, F');
@@ -174,12 +174,26 @@ for i = 1:length(Xe)
 end
 axis equal;
 
-
+close all;
 %% Compute reprojection error.
 
 % ToDo: compute the reprojection errors
 %       plot the histogram of reprojection errors, and
 %       plot the mean reprojection error
+
+close all;
+x1Hat = euclid(P1 * X);
+x2Hat = euclid(P2 * X);
+d1 = (x1Hat - x1).^2;
+d2 = (x2 - x2Hat).^2;
+   
+d2 = sqrt(sum(d1, 1)) + sqrt(sum(d2, 1));
+
+figure;
+histogram(d2)
+hold on
+mn = sum(d2)/size(d2,2);  % compute mean https://www.cmrr.umn.edu/~kendrick/statsmatlab/html/MatlabExamples1.html
+h1 = plot([mn mn], ylim, 'r-','LineWidth',2);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 3. Depth map computation with local methods (SSD)
