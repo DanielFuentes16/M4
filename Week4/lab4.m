@@ -222,6 +222,15 @@ h1 = plot([mn mn], ylim, 'r-','LineWidth',2);
 % Note 2: For this first set of images use 0 as minimum disparity 
 % and 16 as the the maximum one.
 
+imLeft = imread('Data/scene1.row3.col3.ppm');
+imRight = imread('Data/scene1.row3.col4.ppm');
+imGT = imread('Data/truedisp.row3.col3.pgm');
+
+% show images
+figure;
+subplot(1,2,1); imshow(imLeft); axis image; title('Left Image');
+subplot(1,2,2); imshow(imRight); axis image; title('Right Image');
+subplot(1,2,3); imGT(im2rgb); axis image; title('Image Ground Truth');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. Depth map computation with local methods (NCC)
