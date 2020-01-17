@@ -93,18 +93,29 @@ K = H * K;
 
 
 % ToDo: Compute the Essential matrix from the Fundamental matrix
-%E = ...
+E = K' * F * K;
 
 
 % ToDo: write the camera projection matrix for the first camera
-%P1 = ...
+
+P1 = K * eye(3, 4);
 
 % ToDo: write the four possible matrices for the second camera
+[U, D, V] = svd(E);
+Tprime = U(:, 4);
+W = [0 -1 0;
+     1 0 0;
+     0 0 1];
+Ruwv = U * W * V;
+Ruwtv = U * W' * V;
+
+
+
 Pc2 = {};
-%Pc2{1} = ...
-%Pc2{2} = ...
-%Pc2{3} = ...
-%Pc2{4} = ...
+Pc2{1} = K * [Ruwv Tprime];
+Pc2{2} = K * [Ruwv -Tprime];
+Pc2{3} = K * [Ruwtv Tprime];
+Pc2{4} = K * [Ruwv -Tprime];
 
 % HINT: You may get improper rotations; in that case you need to change
 %       their sign.
