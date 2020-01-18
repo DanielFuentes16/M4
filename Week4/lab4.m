@@ -174,7 +174,7 @@ for i = 1:length(Xe)
 end
 axis equal;
 
-close all;
+%close all;
 %% Compute reprojection error.
 
 % ToDo: compute the reprojection errors
@@ -222,15 +222,26 @@ h1 = plot([mn mn], ylim, 'r-','LineWidth',2);
 % Note 2: For this first set of images use 0 as minimum disparity 
 % and 16 as the the maximum one.
 
-imLeft = imread('Data/scene1.row3.col3.ppm');
-imRight = imread('Data/scene1.row3.col4.ppm');
-imGT = imread('Data/truedisp.row3.col3.pgm');
+imgLeft = imread('Data/scene1.row3.col3.ppm');
+imgRight = imread('Data/scene1.row3.col4.ppm');
+imgGT = imread('Data/truedisp.row3.col3.pgm');
+grayLeft = double(rgb2gray(imgLeft));
+grayRight = double(rgb2gray(imgRight));
+
+minDisp = 0;
+maxDisp = 16;
+windowsSize = 3;
+gauss = 0;
+matchingCost = 'SSD';
+
+disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,windowsSize,matchingCost,gauss);
 
 % show images
 figure;
-subplot(1,2,1); imshow(imLeft); axis image; title('Left Image');
-subplot(1,2,2); imshow(imRight); axis image; title('Right Image');
-subplot(1,2,3); imGT(im2rgb); axis image; title('Image Ground Truth');
+subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
+subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
+subplot(2,2,3); imshow(disp,[]); axis image; title('SSD Disparity');
+subplot(2,2,4); imshow(imgGT,[]); axis image; title('Image Ground Truth');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. Depth map computation with local methods (NCC)
@@ -240,6 +251,20 @@ subplot(1,2,3); imGT(im2rgb); axis image; title('Image Ground Truth');
 %
 % Evaluate the results changing the window size (e.g. 3x3, 9x9, 21x21,
 % 31x31). Comment the results.
+
+minDisp = 0;
+maxDisp = 16;
+windowsSize = 3;
+gauss = 0;
+matchingCost = 'NCC';
+
+disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,windowsSize,matchingCost,gauss);
+
+figure;
+subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
+subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
+subplot(2,2,3); imshow(disp); axis image; title('NNC Disparity');
+subplot(2,2,4); imshow(imgGT); axis image; title('Image Ground Truth');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 5. Depth map computation with local methods
@@ -252,6 +277,30 @@ subplot(1,2,3); imGT(im2rgb); axis image; title('Image Ground Truth');
 % Notice that in this new data the minimum and maximum disparities may
 % change.
 
+imgLeft = imread('Data/0001_rectified_s.png');
+imgRight = imread('Data/0002_rectified_s.png');
+grayLeft = double(rgb2gray(imgLeft));
+grayRight = double(rgb2gray(imgRight));
+
+minDisp = 0;
+maxDisp = 16;
+windowsSize = 3;
+gauss = 1;
+
+%SSD Matching
+matchingCost = 'SSD';
+disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,windowsSize,matchingCost,gauss);
+figure;
+imshow(disp,[]);
+title ('SSD disparity map');
+
+%NCC Matching
+matchingCost = 'NCC';
+disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,windowsSize,matchingCost,gauss);
+figure;
+imshow(disp,[]);
+title ('NCC disparity map');
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 6. Bilateral weights
 
@@ -262,6 +311,26 @@ subplot(1,2,3); imGT(im2rgb); axis image; title('Image Ground Truth');
 % Comment the results and compare them to the previous results (no weights).
 %
 % Note: Use grayscale images (the paper uses color images)
+
+imgLeft = imread('Data/scene1.row3.col3.ppm');
+imgRight = imread('Data/scene1.row3.col4.ppm');
+imgGT = imread('Data/truedisp.row3.col3.pgm');
+grayLeft = double(rgb2gray(imgLeft));
+grayRight = double(rgb2gray(imgRight));
+
+minDisp = 0;
+maxDisp = 16;
+windowsSize = 35;
+gauss = 0;
+matchingCost = 'bilateral';
+
+disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,windowsSize,matchingCost,gauss);
+
+figure;
+subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
+subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
+subplot(2,2,3); imshow(disp); axis image; title('Bilateral Disparity');
+subplot(2,2,4); imshow(imgGT); axis image; title('Image Ground Truth');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% OPTIONAL:  Stereo computation with Belief Propagation
