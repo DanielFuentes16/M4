@@ -19,6 +19,7 @@ result = ones(size(leftImage,1), size(leftImage,2));
             count = 1;
             bestResult = 0;
             bestCost = inf;
+            bestCostMax= -inf;
             c =0;
             for countDis = minDisp : maxDisp
                 %if  j + countDis - halfWindows > 0 && j + countDis + halfWindows < h
@@ -29,10 +30,10 @@ result = ones(size(leftImage,1), size(leftImage,2));
                                             
                     end
                     if (cost == 'NCC')
-                         mean1 = mean(target(:));
-                         mean2 = mean(source(:));
-
-                        c = sum(w*(target-mean1).*(source-mean2))/(sqrt(sum(sum(w*(target-mean1).^2)))*sqrt(sum(sum(w*(source-mean2).^2))));
+                        sig_l = sqrt(sum( w(:).* (target(:) - sum(target(:).*w(:))).^2 ));
+                        sig_r = sqrt(sum( w(:).* (source(:) - sum(source(:).*w(:))).^2 ));
+                        c = sum(w(:).*(target(:)-sum(target(:).*w(:)))...
+                            .*(source(:)-sum(source(:).*w(:))) )/(sig_l*sig_r);
                     end
                     if (cost == 'BIL')
                         T = 40;
@@ -52,10 +53,19 @@ result = ones(size(leftImage,1), size(leftImage,2));
                     %result(i , j, count) = c - 1;
                     %count = 1 + count;
                 %end
-                if c < bestCost
-                    bestCost = c;
-                    bestResult = countDis;
+                if cost == 'NCC'
+                  
+                    if c > bestCostMax
+                        bestCostMax = c;
+                        bestResult = countDis;
+                    end
+                else
+                     if c < bestCost
+                        bestCost = c;
+                        bestResult = countDis;
+                    end
                 end
+                
             end
             result(i, j)=bestResult;
         end

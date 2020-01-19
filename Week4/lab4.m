@@ -20,64 +20,64 @@ clc;
 %% Test the triangulate function
 % Use this code to validate that the function triangulate works properly
 
-%P1 = eye(3,4);
-%c = cosd(15); s = sind(15);
-%R = [c -s 0; s c 0; 0 0 1];
-%t = [.3 0.1 0.2]';
-%P2 = [R t];
-%n = 8;
-%X_test = [rand(3,n); ones(1,n)] + [zeros(2,n); 3 * ones(1,n); zeros(1,n)];
-%x1_test = euclid(P1 * X_test);
-%x2_test = euclid(P2 * X_test);
+P1 = eye(3,4);
+c = cosd(15); s = sind(15);
+R = [c -s 0; s c 0; 0 0 1];
+t = [.3 0.1 0.2]';
+P2 = [R t];
+n = 8;
+X_test = [rand(3,n); ones(1,n)] + [zeros(2,n); 3 * ones(1,n); zeros(1,n)];
+x1_test = euclid(P1 * X_test);
+x2_test = euclid(P2 * X_test);
 
-%N_test = size(x1_test,2);
-%X_trian = zeros(4,N_test);
-%for i = 1:N_test
-%    X_trian(:,i) = triangulate(x1_test(:,i), x2_test(:,i), P1, P2, [2 2]);
-%end
+N_test = size(x1_test,2);
+X_trian = zeros(4,N_test);
+for i = 1:N_test
+    X_trian(:,i) = triangulate(x1_test(:,i), x2_test(:,i), P1, P2, [2 2]);
+end
 
 % error
-%euclid(X_test) - euclid(X_trian)
+euclid(X_test) - euclid(X_trian)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 2. Reconstruction from two views
 
 %% Read images
-%Irgb{1} = imread('Data/0001_s.png');
-%Irgb{2} = imread('Data/0002_s.png');
-%I{1} = sum(double(Irgb{1}), 3) / 3 / 255;
-%I{2} = sum(double(Irgb{2}), 3) / 3 / 255;
-%[h,w] = size(I{1});
+Irgb{1} = imread('Data/0001_s.png');
+Irgb{2} = imread('Data/0002_s.png');
+I{1} = sum(double(Irgb{1}), 3) / 3 / 255;
+I{2} = sum(double(Irgb{2}), 3) / 3 / 255;
+[h,w] = size(I{1});
 
 
 %% Compute keypoints and matches.
-%points = cell(2,1);
-%descr = cell(2,1);
-%for i = 1:2
-%    [points{i}, descr{i}] = sift(I{i}, 'Threshold', 0.01);
-%    points{i} = points{i}(1:2,:);
-%end
+points = cell(2,1);
+descr = cell(2,1);
+for i = 1:2
+    [points{i}, descr{i}] = sift(I{i}, 'Threshold', 0.01);
+    points{i} = points{i}(1:2,:);
+end
 
-%matches = siftmatch(descr{1}, descr{2});
+matches = siftmatch(descr{1}, descr{2});
 
 % Plot matches.
-%figure();
-%plotmatches(I{1}, I{2}, points{1}, points{2}, matches, 'Stacking', 'v');
+figure();
+plotmatches(I{1}, I{2}, points{1}, points{2}, matches, 'Stacking', 'v');
 
 
 %% Fit Fundamental matrix and remove outliers.
-%x1 = points{1}(:, matches(1, :));
-%x2 = points{2}(:, matches(2, :));
-%[F, inliers] = ransac_fundamental_matrix(homog(x1), homog(x2), 2.0);
+x1 = points{1}(:, matches(1, :));
+x2 = points{2}(:, matches(2, :));
+[F, inliers] = ransac_fundamental_matrix(homog(x1), homog(x2), 2.0);
 
 % Plot inliers.
-%inlier_matches = matches(:, inliers);
-%figure;
-%plotmatches(I{1}, I{2}, points{1}, points{2}, inlier_matches, 'Stacking', 'v');
+inlier_matches = matches(:, inliers);
+figure;
+plotmatches(I{1}, I{2}, points{1}, points{2}, inlier_matches, 'Stacking', 'v');
 
-%x1 = points{1}(:, inlier_matches(1, :));
-%x2 = points{2}(:, inlier_matches(2, :));
+x1 = points{1}(:, inlier_matches(1, :));
+x2 = points{2}(:, inlier_matches(2, :));
 
 %vgg_gui_F(Irgb{1}, Irgb{2}, F');
 
@@ -87,42 +87,42 @@ clc;
 %% Compute candidate camera matrices.
 
 % Camera calibration matrix
-%K = [2362.12 0 1520.69; 0 2366.12 1006.81; 0 0 1];
-%scale = 0.3;
-%H = [scale 0 0; 0 scale 0; 0 0 1];
-%K = H * K;
+K = [2362.12 0 1520.69; 0 2366.12 1006.81; 0 0 1];
+scale = 0.3;
+H = [scale 0 0; 0 scale 0; 0 0 1];
+K = H * K;
 
 
 % ToDo: Compute the Essential matrix from the Fundamental matrix
-%E = K' * F * K;
+E = K' * F * K;
 
 
 % ToDo: write the camera projection matrix for the first camera
 
-%P1 = K * eye(3, 4);
+P1 = K * eye(3, 4);
 
 % ToDo: write the four possible matrices for the second camera
-%[U, D, V] = svd(E);
-%Tprime = U(:, 3);
-%W = [0 -1 0;
-%     1 0 0;
-%     0 0 1];
-%Ruwv = U * W * V';
-%Ruwtv = U * W' * V';
+[U, D, V] = svd(E);
+Tprime = U(:, 3);
+W = [0 -1 0;
+     1 0 0;
+     0 0 1];
+Ruwv = U * W * V';
+Ruwtv = U * W' * V';
 
-%if det(Ruwv) < 0
-%     Ruwv = -Ruwv;
-%end
+if det(Ruwv) < 0
+     Ruwv = -Ruwv;
+end
 
-%if det(Ruwtv) < 0
-%     Ruwtv = -Ruwtv;
-%end
+if det(Ruwtv) < 0
+     Ruwtv = -Ruwtv;
+end
 
-%Pc2 = {};
-%Pc2{1} = K * [Ruwv Tprime];
-%Pc2{2} = K * [Ruwv -Tprime];
-%Pc2{3} = K * [Ruwtv Tprime];
-%Pc2{4} = K * [Ruwtv -Tprime];
+Pc2 = {};
+Pc2{1} = K * [Ruwv Tprime];
+Pc2{2} = K * [Ruwv -Tprime];
+Pc2{3} = K * [Ruwtv Tprime];
+Pc2{4} = K * [Ruwtv -Tprime];
 
 % HINT: You may get improper rotations; in that case you need to change
 %       their sign.
@@ -132,47 +132,47 @@ clc;
 % end
 
 % plot the first camera and the four possible solutions for the second
-%figure;
-%plot_camera(P1,w,h);
-%plot_camera(Pc2{1},w,h);
-%plot_camera(Pc2{2},w,h);
-%plot_camera(Pc2{3},w,h);
-%plot_camera(Pc2{4},w,h);
+figure;
+plot_camera(P1,w,h);
+plot_camera(Pc2{1},w,h);
+plot_camera(Pc2{2},w,h);
+plot_camera(Pc2{3},w,h);
+plot_camera(Pc2{4},w,h);
 
 
 %% Reconstruct structure
 % ToDo: Choose a second camera candidate by triangulating a match.
-%for i = 1:4
-%    currentTriangulation = triangulate(x1, x2, P1, Pc2{i}, [w h]);
-%    currentProjection = P1 * currentTriangulation;
-%    currentProjectionPrime = Pc2{i} * currentTriangulation;
-%    isResult = currentProjection(3)>=0 && currentProjectionPrime(3)>=0;
-%    if(isResult)
-%        P2 = Pc2{i};
-%    end
-%end 
+for i = 1:4
+    currentTriangulation = triangulate(x1, x2, P1, Pc2{i}, [w h]);
+    currentProjection = P1 * currentTriangulation;
+    currentProjectionPrime = Pc2{i} * currentTriangulation;
+    isResult = currentProjection(3)>=0 && currentProjectionPrime(3)>=0;
+    if(isResult)
+        P2 = Pc2{i};
+    end
+end 
 
 % Triangulate all matches.
-%N = size(x1,2);
-%X = zeros(4,N);
-%for i = 1:N
-%    X(:,i) = triangulate(x1(:,i), x2(:,i), P1, P2, [w h]);
-%end
+N = size(x1,2);
+X = zeros(4,N);
+for i = 1:N
+    X(:,i) = triangulate(x1(:,i), x2(:,i), P1, P2, [w h]);
+end
 
 
 
 %% Plot with colors
-%r = interp2(double(Irgb{1}(:,:,1)), x1(1,:), x1(2,:));
-%g = interp2(double(Irgb{1}(:,:,2)), x1(1,:), x1(2,:));
-%b = interp2(double(Irgb{1}(:,:,3)), x1(1,:), x1(2,:));
-%Xe = euclid(X);
-%figure; hold on;
-%plot_camera(P1,w,h);
-%plot_camera(P2,w,h);
-%for i = 1:length(Xe)
-%    scatter3(Xe(1,i), Xe(3,i), -Xe(2,i), 5^2, [r(i) g(i) b(i)]/255, 'filled');
-%end
-%axis equal;
+r = interp2(double(Irgb{1}(:,:,1)), x1(1,:), x1(2,:));
+g = interp2(double(Irgb{1}(:,:,2)), x1(1,:), x1(2,:));
+b = interp2(double(Irgb{1}(:,:,3)), x1(1,:), x1(2,:));
+Xe = euclid(X);
+figure; hold on;
+plot_camera(P1,w,h);
+plot_camera(P2,w,h);
+for i = 1:length(Xe)
+    scatter3(Xe(1,i), Xe(3,i), -Xe(2,i), 5^2, [r(i) g(i) b(i)]/255, 'filled');
+end
+axis equal;
 
 %close all;
 %% Compute reprojection error.
@@ -182,18 +182,18 @@ clc;
 %       plot the mean reprojection error
 
 %close all;
-%x1Hat = euclid(P1 * X);
-%x2Hat = euclid(P2 * X);
-%d1 = (x1Hat - x1).^2;
-%d2 = (x2 - x2Hat).^2;
+x1Hat = euclid(P1 * X);
+x2Hat = euclid(P2 * X);
+d1 = (x1Hat - x1).^2;
+d2 = (x2 - x2Hat).^2;
    
-%d2 = sqrt(sum(d1, 1)) + sqrt(sum(d2, 1));
+d2 = sqrt(sum(d1, 1)) + sqrt(sum(d2, 1));
 
-%figure;
-%histogram(d2)
-%hold on
-%mn = sum(d2)/size(d2,2);  % compute mean https://www.cmrr.umn.edu/~kendrick/statsmatlab/html/MatlabExamples1.html
-%h1 = plot([mn mn], ylim, 'r-','LineWidth',2);
+figure;
+histogram(d2)
+hold on
+mn = sum(d2)/size(d2,2);  % compute mean https://www.cmrr.umn.edu/~kendrick/statsmatlab/html/MatlabExamples1.html
+h1 = plot([mn mn], ylim, 'r-','LineWidth',2);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 3. Depth map computation with local methods (SSD)
@@ -255,20 +255,20 @@ end
 % Evaluate the results changing the window size (e.g. 3x3, 9x9, 21x21,
 % 31x31). Comment the results.
 
-%minDisp = 0;
-%maxDisp = 16;
-%windowsSizes = [3, 9, 21, 31];
-%gauss = 0;
-%matchingCost = 'NCC';
+minDisp = 0;
+maxDisp = 16;
+windowsSizes = [3, 5, 9, 21, 31];
+gauss = 0;
+matchingCost = 'NCC';
 
-%for w = windowsSizes
-%    disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,w,matchingCost,gauss);
-%    figure;
-%    subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
-%    subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
-%    subplot(2,2,3); imshow(disp); axis image; title(strcat('NNC Disparity windos size ', num2str(w),'x',num2str(w)));
-%    subplot(2,2,4); imshow(imgGT); axis image; title('Image Ground Truth');
-%end
+for w = windowsSizes
+    disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,w,matchingCost);
+    figure;
+    subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
+    subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
+    subplot(2,2,3); imshow(cast(disp*255/16, 'uint8')); axis image; title(strcat('NNC Disparity windos size ', num2str(w),'x',num2str(w)));
+    subplot(2,2,4); imshow(imgGT); axis image; title('Image Ground Truth');
+end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -282,44 +282,44 @@ end
 % Notice that in this new data the minimum and maximum disparities may
 % change.
 
-%imgLeft = imread('Data/0001_rectified_s.png');
-%imgRight = imread('Data/0002_rectified_s.png');
-%grayLeft = double(rgb2gray(imgLeft));
-%grayRight = double(rgb2gray(imgRight));
+imgLeft = imread('Data/0001_rectified_s.png');
+imgRight = imread('Data/0002_rectified_s.png');
+grayLeft = double(rgb2gray(imgLeft));
+grayRight = double(rgb2gray(imgRight));
 
-%minDisp = 0;
-%maxDisp = 16;
-%maxDisps = [16, 17, 18, 19, 20, 32]
-%windowsSize = 3;
-%gauss = 1;
+minDisp = 0;
+maxDisp = 16;
+maxDisps = [16, 17, 18, 19, 20, 32]
+windowsSize = 3;
+gauss = 1;
 
-%for mxd = maxDisps
-%    for w = windowsSizes
+for mxd = maxDisps
+    for w = windowsSizes
         
         %SSD Matching
-%        matchingCost = 'SSD';
-%        disp = stereo_computation(grayLeft,grayRight,minDisp,mxd,w,matchingCost,gauss);
+        matchingCost = 'SSD';
+        disp = stereo_computation(grayLeft,grayRight,minDisp,mxd,w,matchingCost);
 
-%        figure;
-%        subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
-%        subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
-%        subplot(2,2,3); imshow(disp); axis image; title(strcat('NNC Disparity windos size ', num2str(w),'x',num2str(w)));
-%    end
-%end
+        figure;
+        subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
+        subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
+        subplot(2,2,3); imshow(disp); axis image; title(strcat('NNC Disparity windos size ', num2str(w),'x',num2str(w)));
+    end
+end
 
 
-%for mxd = maxDisps
-%    for w = windowsSizes
+for mxd = maxDisps
+    for w = windowsSizes
         %NCC Matching
-%        matchingCost = 'NCC';
-%        disp = stereo_computation(grayLeft,grayRight,minDisp,mxd,w,matchingCost,gauss);
+        matchingCost = 'NCC';
+        disp = stereo_computation(grayLeft,grayRight,minDisp,mxd,w,matchingCost);
 
-%        figure;
-%        subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
-%        subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
-%        subplot(2,2,3); imshow(disp); axis image; title(strcat('NNC Disparity windos size ', num2str(w),'x',num2str(w)));
-%    end
-%end
+        figure;
+        subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
+        subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
+        subplot(2,2,3); imshow(disp); axis image; title(strcat('NNC Disparity windos size ', num2str(w),'x',num2str(w)));
+    end
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 6. Bilateral weights
@@ -344,13 +344,14 @@ windowsSize = 5;
 gauss = 0;
 matchingCost = 'BIL';
 
-disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,windowsSize,matchingCost);
-
-figure;
-subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
-subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
-subplot(2,2,3); imshow(cast(disp*255/16, 'uint8')); axis image; title('Bilateral Disparity');
-subplot(2,2,4); imshow(imgGT); axis image; title('Image Ground Truth');
+for w = windowsSizes
+    disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,w,matchingCost);
+    figure;
+    subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
+    subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
+    subplot(2,2,3); imshow(cast(disp*255/16, 'uint8')); axis image; title(strcat('Bilateral Disparity windows size ', num2str(w),'x',num2str(w)));
+    subplot(2,2,4); imshow(imgGT); axis image; title('Image Ground Truth');   
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% OPTIONAL:  Stereo computation with Belief Propagation
