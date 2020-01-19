@@ -222,29 +222,29 @@ h1 = plot([mn mn], ylim, 'r-','LineWidth',2);
 % Note 2: For this first set of images use 0 as minimum disparity 
 % and 16 as the the maximum one.
 
-imgLeft = imread('Data/scene1.row3.col3.ppm');
-imgRight = imread('Data/scene1.row3.col4.ppm');
-imgGT = imread('Data/truedisp.row3.col3.pgm');
-grayLeft = double(rgb2gray(imgLeft));
-grayRight = double(rgb2gray(imgRight));
+%imgLeft = imread('Data/scene1.row3.col3.ppm');
+%imgRight = imread('Data/scene1.row3.col4.ppm');
+%imgGT = imread('Data/truedisp.row3.col3.pgm');
+%grayLeft = double(rgb2gray(imgLeft));
+%grayRight = double(rgb2gray(imgRight));
 
-minDisp = 0;
-maxDisp = 16;
-windowsSizes = [3, 9, 21, 31];
-gauss = 0;
-matchingCost = 'SSD';
+%minDisp = 0;
+%maxDisp = 16;
+%windowsSizes = [3, 9, 21, 31];
+%gauss = 0;
+%matchingCost = 'SSD';
 
 
-for w = windowsSizes
-    disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,w,matchingCost,gauss);
+%for w = windowsSizes
+%    disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,w,matchingCost,gauss);
 
     % show images
-    figure;
-    subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
-    subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
-    subplot(2,2,3); imshow(disp,[]); axis image; title(strcat('SSD Disparity windos size ', num2str(w),'x',num2str(w)));
-    subplot(2,2,4); imshow(imgGT,[]); axis image; title('Image Ground Truth');
-end
+%    figure;
+%    subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
+%    subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
+%    subplot(2,2,3); imshow(disp,[]); axis image; title(strcat('SSD Disparity windos size ', num2str(w),'x',num2str(w)));
+%    subplot(2,2,4); imshow(imgGT,[]); axis image; title('Image Ground Truth');
+%end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. Depth map computation with local methods (NCC)
@@ -255,20 +255,20 @@ end
 % Evaluate the results changing the window size (e.g. 3x3, 9x9, 21x21,
 % 31x31). Comment the results.
 
-minDisp = 0;
-maxDisp = 16;
-windowsSizes = [3, 9, 21, 31];
-gauss = 0;
-matchingCost = 'NCC';
+%minDisp = 0;
+%maxDisp = 16;
+%windowsSizes = [3, 9, 21, 31];
+%gauss = 0;
+%matchingCost = 'NCC';
 
-for w = windowsSizes
-    disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,w,matchingCost,gauss);
-    figure;
-    subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
-    subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
-    subplot(2,2,3); imshow(disp); axis image; title(strcat('NNC Disparity windos size ', num2str(w),'x',num2str(w)));
-    subplot(2,2,4); imshow(imgGT); axis image; title('Image Ground Truth');
-end
+%for w = windowsSizes
+%    disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,w,matchingCost,gauss);
+%    figure;
+%    subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
+%    subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
+%    subplot(2,2,3); imshow(disp); axis image; title(strcat('NNC Disparity windos size ', num2str(w),'x',num2str(w)));
+%    subplot(2,2,4); imshow(imgGT); axis image; title('Image Ground Truth');
+%end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
