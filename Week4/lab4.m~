@@ -289,26 +289,36 @@ grayRight = double(rgb2gray(imgRight));
 
 minDisp = 0;
 maxDisp = 16;
+maxDisps = [16, 17, 18, 19, 20, 32]
 windowsSize = 3;
 gauss = 1;
 
-%SSD Matching
-matchingCost = 'SSD';
-disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,windowsSize,matchingCost,gauss);
-figure;
-imshow(disp,[]);
-title ('SSD disparity map');
+for mxd = maxDisps
+    for w = windowsSizes
+        
+        %SSD Matching
+        matchingCost = 'SSD';
+        disp = stereo_computation(grayLeft,grayRight,minDisp,mxd,w,matchingCost,gauss);
 
-for maxD = 
-for w = windowsSizes
-    %NCC Matching
-    matchingCost = 'NCC';
-    disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,windowsSize,matchingCost,gauss);
+        figure;
+        subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
+        subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
+        subplot(2,2,3); imshow(disp); axis image; title(strcat('NNC Disparity windos size ', num2str(w),'x',num2str(w)));
+    end
+end
 
-    figure;
-    subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
-    subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
-    subplot(2,2,3); imshow(disp); axis image; title(strcat('NNC Disparity windos size ', num2str(w),'x',num2str(w)));
+
+for mxd = maxDisps
+    for w = windowsSizes
+        %NCC Matching
+        matchingCost = 'NCC';
+        disp = stereo_computation(grayLeft,grayRight,minDisp,mxd,w,matchingCost,gauss);
+
+        figure;
+        subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
+        subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
+        subplot(2,2,3); imshow(disp); axis image; title(strcat('NNC Disparity windos size ', num2str(w),'x',num2str(w)));
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
