@@ -222,26 +222,29 @@ h1 = plot([mn mn], ylim, 'r-','LineWidth',2);
 % Note 2: For this first set of images use 0 as minimum disparity 
 % and 16 as the the maximum one.
 
-imgLeft = imread('Data/scene1.row3.col3.ppm');
-imgRight = imread('Data/scene1.row3.col4.ppm');
-imgGT = imread('Data/truedisp.row3.col3.pgm');
-grayLeft = double(rgb2gray(imgLeft));
-grayRight = double(rgb2gray(imgRight));
+%imgLeft = imread('Data/scene1.row3.col3.ppm');
+%imgRight = imread('Data/scene1.row3.col4.ppm');
+%imgGT = imread('Data/truedisp.row3.col3.pgm');
+%grayLeft = double(rgb2gray(imgLeft));
+%grayRight = double(rgb2gray(imgRight));
 
-minDisp = 0;
-maxDisp = 16;
-windowsSize = 3;
-gauss = 0;
-matchingCost = 'SSD';
+%minDisp = 0;
+%maxDisp = 16;
+%windowsSizes = [3, 9, 21, 31];
+%gauss = 0;
+%matchingCost = 'SSD';
 
-disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,windowsSize,matchingCost,gauss);
 
-% show images
-figure;
-subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
-subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
-subplot(2,2,3); imshow(disp,[]); axis image; title('SSD Disparity');
-subplot(2,2,4); imshow(imgGT,[]); axis image; title('Image Ground Truth');
+%for w = windowsSizes
+%    disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,w,matchingCost,gauss);
+
+    % show images
+%    figure;
+%    subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
+%    subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
+%    subplot(2,2,3); imshow(disp,[]); axis image; title(strcat('SSD Disparity windos size ', num2str(w),'x',num2str(w)));
+%    subplot(2,2,4); imshow(imgGT,[]); axis image; title('Image Ground Truth');
+%end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. Depth map computation with local methods (NCC)
@@ -254,17 +257,19 @@ subplot(2,2,4); imshow(imgGT,[]); axis image; title('Image Ground Truth');
 
 minDisp = 0;
 maxDisp = 16;
-windowsSize = 3;
+windowsSizes = [3, 9, 21, 31];
 gauss = 0;
 matchingCost = 'NCC';
 
-disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,windowsSize,matchingCost,gauss);
+for w = windowsSizes
+    disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,w,matchingCost,gauss);
+    figure;
+    subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
+    subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
+    subplot(2,2,3); imshow(disp); axis image; title(strcat('NNC Disparity windos size ', num2str(w),'x',num2str(w)));
+    subplot(2,2,4); imshow(imgGT); axis image; title('Image Ground Truth');
+end
 
-figure;
-subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
-subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
-subplot(2,2,3); imshow(disp); axis image; title('NNC Disparity');
-subplot(2,2,4); imshow(imgGT); axis image; title('Image Ground Truth');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 5. Depth map computation with local methods
@@ -284,22 +289,37 @@ grayRight = double(rgb2gray(imgRight));
 
 minDisp = 0;
 maxDisp = 16;
+maxDisps = [16, 17, 18, 19, 20, 32]
 windowsSize = 3;
 gauss = 1;
 
-%SSD Matching
-matchingCost = 'SSD';
-disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,windowsSize,matchingCost,gauss);
-figure;
-imshow(disp,[]);
-title ('SSD disparity map');
+for mxd = maxDisps
+    for w = windowsSizes
+        
+        %SSD Matching
+        matchingCost = 'SSD';
+        disp = stereo_computation(grayLeft,grayRight,minDisp,mxd,w,matchingCost,gauss);
 
-%NCC Matching
-matchingCost = 'NCC';
-disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,windowsSize,matchingCost,gauss);
-figure;
-imshow(disp,[]);
-title ('NCC disparity map');
+        figure;
+        subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
+        subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
+        subplot(2,2,3); imshow(disp); axis image; title(strcat('NNC Disparity windos size ', num2str(w),'x',num2str(w)));
+    end
+end
+
+
+for mxd = maxDisps
+    for w = windowsSizes
+        %NCC Matching
+        matchingCost = 'NCC';
+        disp = stereo_computation(grayLeft,grayRight,minDisp,mxd,w,matchingCost,gauss);
+
+        figure;
+        subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
+        subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
+        subplot(2,2,3); imshow(disp); axis image; title(strcat('NNC Disparity windos size ', num2str(w),'x',num2str(w)));
+    end
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 6. Bilateral weights

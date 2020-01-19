@@ -25,7 +25,7 @@ function disparity = stereo_computation(leftImage, rightImage, minDisp, maxDisp,
     for i = windowDist + 1:rows - windowDist
         for j = windowDist + 1:cols - windowDist
             %Left region
-            regionLeft = leftImage((i - windowDist):(i + windowDist),(j - windowDist):(j + windowDist));            
+            regionLeft = rightImage((i - windowDist):(i + windowDist),(j - windowDist):(j + windowDist));            
             
             %Set weigths, gauss = 1 for section 5
             w = 1/(prod(size(regionLeft)))*ones(size(regionLeft));
@@ -44,7 +44,7 @@ function disparity = stereo_computation(leftImage, rightImage, minDisp, maxDisp,
             fin_s = min(cols-windowDist, fin_idx);
             
             %max/min values for matching costs
-            maxValue = -Inf;
+            maxValue = 0;
             minValue = Inf;
             
             %bestDisplay is disparity value with which the minimum (SSD) 
@@ -52,7 +52,7 @@ function disparity = stereo_computation(leftImage, rightImage, minDisp, maxDisp,
             bestDisplay = 0;
             for  s = ini_s:fin_s
                 if(abs(s-j) >= minDisp)
-                    regionRight = rightImage((i - windowDist):(i + windowDist),(s - windowDist):(s + windowDist));
+                    regionRight = leftImage((i - windowDist):(i + windowDist),(s - windowDist):(s + windowDist));
                     switch cost
                         
                         case 'SSD'
@@ -60,18 +60,18 @@ function disparity = stereo_computation(leftImage, rightImage, minDisp, maxDisp,
                             ssd = sum(sum((w(:).*((regionLeft(:) - regionRight(:)).^2))));
                             if ssd < minValue
                                 minValue = ssd;
-                                bestDisplay = j - s;
+                                bestDisplay = s - ini_s;
                             end
                             
                         case 'NCC'
                             %Normalized Cross Correlation
-                            sig_l = sqrt(sum( w(:).* (regionLeft(:) - sum(regionLeft(:).*w(:))).^2 ));
-                            sig_r = sqrt(sum( w(:).* (regionRight(:) - sum(regionRight(:).*w(:))).^2 ));
-                            ncc = sum(w(:).*(regionLeft(:)-sum(regionLeft(:).*w(:)))...
-                                .*(regionRight(:)-sum(regionRight(:).*w(:))) )/(sig_l*sig_r);
+                            mean1 = mean(regionLeft(:));
+                            mean2 = mean(regionRight(:));
+
+                            ncc = sum(w*(regionLeft-mean1).*(regionRight-mean2))/(sqrt(sum(sum(w*(regionLeft-mean1).^2)))*sqrt(sum(sum(w*(regionRight-mean2).^2))));
                             if ncc > maxValue
                                 maxValue = ncc;
-                                bestDisplay = j - s;
+                                bestDisplay =  s - ini_s;
                             end
                             
                         case 'bilateral'
@@ -90,7 +90,7 @@ function disparity = stereo_computation(leftImage, rightImage, minDisp, maxDisp,
                             bil = sum(sum(wLeft(:).*wRight(:).*init_cost(:))) / sum(sum(wLeft(:).*wRight(:)));
                             if bil > maxValue
                                 maxValue = bil;
-                                bestDisplay = j - s;
+                                bestDisplay = s + 1;
                             end
                             
                     end
