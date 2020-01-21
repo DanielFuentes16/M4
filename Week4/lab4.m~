@@ -181,7 +181,7 @@ axis equal;
 %       plot the histogram of reprojection errors, and
 %       plot the mean reprojection error
 
-close all;
+%close all;
 x1Hat = euclid(P1 * X);
 x2Hat = euclid(P2 * X);
 d1 = (x1Hat - x1).^2;
@@ -222,29 +222,29 @@ h1 = plot([mn mn], ylim, 'r-','LineWidth',2);
 % Note 2: For this first set of images use 0 as minimum disparity 
 % and 16 as the the maximum one.
 
-%imgLeft = imread('Data/scene1.row3.col3.ppm');
-%imgRight = imread('Data/scene1.row3.col4.ppm');
-%imgGT = imread('Data/truedisp.row3.col3.pgm');
-%grayLeft = double(rgb2gray(imgLeft));
-%grayRight = double(rgb2gray(imgRight));
+imgLeft = imread('Data/scene1.row3.col3.ppm');
+imgRight = imread('Data/scene1.row3.col4.ppm');%
+imgGT = imread('Data/truedisp.row3.col3.pgm');
+grayLeft = double(rgb2gray(imgLeft));
+grayRight = double(rgb2gray(imgRight));
 
-%minDisp = 0;
-%maxDisp = 16;
-%windowsSizes = [3, 9, 21, 31];
-%gauss = 0;
-%matchingCost = 'SSD';
+minDisp = 0;
+maxDisp = 16;
+windowsSizes = [3, 9, 21, 31];
+gauss = 0;
+matchingCost = 'SSD';
 
 
-%for w = windowsSizes
-%    disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,w,matchingCost,gauss);
+for w = windowsSizes
+    disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,w,matchingCost);
 
     % show images
-%    figure;
-%    subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
-%    subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
-%    subplot(2,2,3); imshow(disp,[]); axis image; title(strcat('SSD Disparity windos size ', num2str(w),'x',num2str(w)));
-%    subplot(2,2,4); imshow(imgGT,[]); axis image; title('Image Ground Truth');
-%end
+    figure;
+    subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
+    subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
+    subplot(2,2,3); imshow(disp,[]); axis image; title(strcat('SSD Disparity windos size ', num2str(w),'x',num2str(w)));
+    subplot(2,2,4); imshow(imgGT,[]); axis image; title('Image Ground Truth');
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. Depth map computation with local methods (NCC)
@@ -255,20 +255,20 @@ h1 = plot([mn mn], ylim, 'r-','LineWidth',2);
 % Evaluate the results changing the window size (e.g. 3x3, 9x9, 21x21,
 % 31x31). Comment the results.
 
-%minDisp = 0;
-%maxDisp = 16;
-%windowsSizes = [3, 9, 21, 31];
-%gauss = 0;
-%matchingCost = 'NCC';
+minDisp = 0;
+maxDisp = 16;
+windowsSizes = [3, 5, 9, 21, 31];
+gauss = 0;
+matchingCost = 'NCC';
 
-%for w = windowsSizes
-%    disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,w,matchingCost,gauss);
-%    figure;
-%    subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
-%    subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
-%    subplot(2,2,3); imshow(disp); axis image; title(strcat('NNC Disparity windos size ', num2str(w),'x',num2str(w)));
-%    subplot(2,2,4); imshow(imgGT); axis image; title('Image Ground Truth');
-%end
+for w = windowsSizes
+    disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,w,matchingCost);
+    figure;
+    subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
+    subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
+    subplot(2,2,3); imshow(cast(disp*255/16, 'uint8')); axis image; title(strcat('NNC Disparity windos size ', num2str(w),'x',num2str(w)));
+    subplot(2,2,4); imshow(imgGT); axis image; title('Image Ground Truth');
+end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -289,7 +289,7 @@ grayRight = double(rgb2gray(imgRight));
 
 minDisp = 0;
 maxDisp = 16;
-maxDisps = [16, 17, 18, 19, 20, 32]
+maxDisps = [16, 24]
 windowsSize = 3;
 gauss = 1;
 
@@ -298,7 +298,7 @@ for mxd = maxDisps
         
         %SSD Matching
         matchingCost = 'SSD';
-        disp = stereo_computation(grayLeft,grayRight,minDisp,mxd,w,matchingCost,gauss);
+        disp = stereo_computation(grayLeft,grayRight,minDisp,mxd,w,matchingCost);
 
         figure;
         subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
@@ -312,7 +312,7 @@ for mxd = maxDisps
     for w = windowsSizes
         %NCC Matching
         matchingCost = 'NCC';
-        disp = stereo_computation(grayLeft,grayRight,minDisp,mxd,w,matchingCost,gauss);
+        disp = stereo_computation(grayLeft,grayRight,minDisp,mxd,w,matchingCost);
 
         figure;
         subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
@@ -321,6 +321,24 @@ for mxd = maxDisps
     end
 end
 
+
+minDisp = 0;
+maxDisp = 16;
+windowsSize = 10;
+gauss = 0;
+matchingCost = 'BCC';
+
+for mxd = maxDisps
+    for w = windowsSizes
+        disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,windowsSize,matchingCost);
+        figure;
+        subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
+        subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
+        subplot(2,2,3); imshow(cast(disp*255/16, 'uint8')); axis image; title(strcat('Bilateral Disparity windows size ', num2str(w),'x',num2str(w)));
+        subplot(2,2,4); imshow(imgGT); axis image; title('Image Ground Truth');   
+
+    end
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 6. Bilateral weights
 
@@ -340,17 +358,18 @@ grayRight = double(rgb2gray(imgRight));
 
 minDisp = 0;
 maxDisp = 16;
-windowsSize = 35;
+windowsSize = 5;
 gauss = 0;
-matchingCost = 'bilateral';
+matchingCost = 'BIL';
 
-disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,windowsSize,matchingCost,gauss);
-
-figure;
-subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
-subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
-subplot(2,2,3); imshow(disp); axis image; title('Bilateral Disparity');
-subplot(2,2,4); imshow(imgGT); axis image; title('Image Ground Truth');
+for w = windowsSizes
+    disp = stereo_computation(grayLeft,grayRight,minDisp,maxDisp,w,matchingCost);
+    figure;
+    subplot(2,2,1); imshow(imgLeft); axis image; title('Left Image');
+    subplot(2,2,2); imshow(imgRight); axis image; title('Right Image');
+    subplot(2,2,3); imshow(cast(disp*255/16, 'uint8')); axis image; title(strcat('Bilateral Disparity windows size ', num2str(w),'x',num2str(w)));
+    subplot(2,2,4); imshow(imgGT); axis image; title('Image Ground Truth');   
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% OPTIONAL:  Stereo computation with Belief Propagation

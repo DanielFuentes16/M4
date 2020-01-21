@@ -35,7 +35,7 @@ result = ones(size(leftImage,1), size(leftImage,2));
                         c = sum(w(:).*(target(:)-sum(target(:).*w(:)))...
                             .*(source(:)-sum(source(:).*w(:))) )/(sig_l*sig_r);
                     end
-                    if (cost == 'BIL')
+                    if (cost == 'BSD')
                         T = 40;
                         gammaC = 5;
                         p = [halfWindows+1,halfWindows+1];
@@ -50,15 +50,41 @@ result = ones(size(leftImage,1), size(leftImage,2));
                         w=wLeft.*wRight;
                         c = sum(sum((w(:).*((source(:) - target(:)).^2))));
                     end
+                    if (cost == 'BCC')
+                        T = 40;
+                        gammaC = 5;
+                        p = [halfWindows+1,halfWindows+1];
+                        wLeft = zeros(size(target));
+                        wRight = zeros(size(source));
+                        deltaCLeft = abs(target(p(1),p(2))-target); 
+                        deltaCRight = abs(source(p(1),p(2))-source); 
+
+                        wLeft = exp(-deltaCLeft/gammaC).*exp(-zeros((halfWindows*2)+1)/halfWindows);
+                        wRight = exp(-deltaCRight/gammaC).*exp(-zeros((halfWindows*2)+1)/halfWindows);
+
+                        w=wLeft.*wRight;
+                        sig_l = sqrt(sum( w(:).* (target(:) - sum(target(:).*w(:))).^2 ));
+                        sig_r = sqrt(sum( w(:).* (source(:) - sum(source(:).*w(:))).^2 ));
+                        c = sum(w(:).*(target(:)-sum(target(:).*w(:)))...
+                            .*(source(:)-sum(source(:).*w(:))) )/(sig_l*sig_r);                       
+                    end
                     %result(i , j, count) = c - 1;
                     %count = 1 + count;
                 %end
-                if cost == 'NCC'
+                if cost == 'NCC' 
                   
                     if c > bestCostMax
                         bestCostMax = c;
                         bestResult = countDis;
                     end
+                end
+                if cost == 'BCC' 
+                  
+                    if c > bestCostMax
+                        bestCostMax = c;
+                        bestResult = countDis;
+                    end
+                
                 else
                      if c < bestCost
                         bestCost = c;
