@@ -90,6 +90,7 @@ def main(argv):
                     xs1, xs2 = fd.apply_mask(x1, x2, mask, F)
                     # look for new matches
                     # TODO implement a search for new inliers based on epipolar
+
                     # error given by F (MVG, Alg 11.4 (v)). Set the maximum error that an inlier may
                     # throw on the epipolar equation to 0.00155
                     # Returns: 
