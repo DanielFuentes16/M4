@@ -17,7 +17,7 @@ debug = -1
 if debug > 2:
     np.set_printoptions(threshold=sys.maxsize) #print full arrays
 
-debug_display = False
+debug_display = True
 normalise = True #Activate coordinate normalisation 
 opencv = False #Whether use opencv or matplot to display images
 path_imgs="../datasets/castle_dense_large/urd/"
@@ -29,13 +29,14 @@ def read_image(n):
 
     path = path_imgs + str(n).zfill(4) + '.png'
     img = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
-
+    plt.imshow(img)
     if img is None:
         print("ERROR: Image", path, "not loaded")
         sys.exit()
 
     if debug >= 0:
         print("  Image", path, "loaded")
+
 
     return img
 

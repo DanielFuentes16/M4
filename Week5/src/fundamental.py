@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 
 import utils as h
+from maths import print_epipolar_eq
+
 
 def normalise_coord(p1, p2):
     # normalise both sets
@@ -110,8 +112,10 @@ def refine_matches(x1, x2, F):
     return xr1.T, xr2.T 
 
 def search_more_matches(out1, out2, F):
-    # your code here
 
+    #xn1, xn2, out1, out2
+    xn1 = np.array([]).reshape(0, 2)
+    xn2 = np.array([]).reshape(0, 2)
     return xn1, xn2, out1, out2
 
 def make_homogeneous(p):
