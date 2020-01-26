@@ -34,10 +34,25 @@ def estimate_3d_points(P1, P2, xr1, xr2):
 
     return Xprj
 
-def compute_reproj_error(X, cam): 
+def compute_reproj_error(Xx, cam, x1, x2):
+    P1 =  cam[-2]
+    P2 =  cam[-1]
+    x1p = P1 @ Xx
+    x2p = P2 @ Xx
 
 
-    return error
+
+    x1p = x1p/x1p[2,:]
+    x2p = x2p/x2p[2,:]
+
+    x1p = np.delete(x1p.T,2, axis = 1)
+    x2p = np.delete(x2p.T, 2, axis=1)
+
+    d1 = (x1p[:,0]- x1[:,0])**2 + (x1p[:,1]- x1[:,1])**2
+    d2 = (x2p[:,0]- x2[:,0])**2 + (x2p[:,1]- x2[:,1])**2
+    error = d1 + d2
+    #d = np.linalg.norm(x1p[:2,:]-x1.T, axis = 0) + np.linalg.norm(x2p[:2,:]-x2.T, axis = 0)
+    return np.sum(error)
 
 def transform(aff_hom, Xprj, cams_pr):
     # your code here
