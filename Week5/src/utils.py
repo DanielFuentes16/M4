@@ -1,6 +1,6 @@
 import sys
 import cv2
-
+import numpy as np
 # render 2d/3d plots
 import matplotlib.pyplot as plt 
 from mpl_toolkits.mplot3d import Axes3D
@@ -12,7 +12,7 @@ from mpl_toolkits.mplot3d import Axes3D
     #  1: INFO, show values for different methods
     #  2: VERBOSE, show relevant matrices of pipeline 
     #  3: INSANE, show all values of data structures
-debug = -1 
+debug = 0
 
 if debug > 2:
     np.set_printoptions(threshold=sys.maxsize) #print full arrays
@@ -64,8 +64,8 @@ def draw_lines(img1, img2, lines, x1, x2):
         x0,y0 = map(int, [0, -r[2]/r[1] ])
         x1,y1 = map(int, [c, -(r[2]+r[0]*c)/r[1] ])
         img1 = cv2.line(img1, (x0,y0), (x1,y1), color,1)
-        img1 = cv2.circle(img1,tuple(pt1.astype(int)),5,color,-1)
-        img2 = cv2.circle(img2,tuple(pt2.astype(int)),5,color,-1)
+        #img1 = cv2.circle(img1,tuple(pt1.astype(int)),5,color,-1)
+        #img2 = cv2.circle(img2,tuple(pt2.astype(int)),5,color,-1)
 
         #cv2.imshow('epipolar lines and matches at img1', img1)
         #cv2.imshow('epipolar lines and matches at img2', img2)
@@ -79,8 +79,8 @@ def draw_matches(img1, img2, x1, x2):
     img2 = cv2.cvtColor(img2,cv2.COLOR_GRAY2BGR)
     for pt1,pt2 in zip(x1, x2):
         color = tuple(np.random.randint(0,255,3).tolist())
-        img1 = cv2.circle(img1,tuple(pt1.astype(int)),5,color, -1)
-        img2 = cv2.circle(img2,tuple(pt2.astype(int)),5,color, -1)
+        #img1 = cv2.circle(img1,tuple(pt1.astype(int)),5,color, -1)
+        #img2 = cv2.circle(img2,tuple(pt2.astype(int)),5,color, -1)
 
     return img1,img2
 

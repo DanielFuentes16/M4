@@ -114,9 +114,22 @@ def refine_matches(x1, x2, F):
 def search_more_matches(out1, out2, F):
 
     #xn1, xn2, out1, out2
-    xn1 = np.array([]).reshape(0, 2)
-    xn2 = np.array([]).reshape(0, 2)
-    return xn1, xn2, out1, out2
+    xn1 = np.empty((0,2))
+    xn2 = np.empty((0,2))
+    o1 = np.empty((0,2))
+    o2 = np.empty((0,2))
+    for i in range(len(out1)):
+        x1 = np.hstack((out1[i], np.array([1])))
+        x1t = np.transpose(x1)
+        x2 = np.hstack((out2[i], np.array([1])))
+        error = np.abs(x1t.dot(F.dot(x2)))
+        if error < 0.00155:
+            xn1 = np.vstack((xn1, out1[i]))
+            xn2 = np.vstack((xn2, out2[i]))
+        else:
+            o1 = np.vstack((o1, out1[i]))
+            o2 = np.vstack((o2, out2[i]))
+    return xn1, xn2, o1, o2
 
 def make_homogeneous(p):
     if p.shape[1] != 2 : 
