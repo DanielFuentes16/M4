@@ -56,6 +56,7 @@ def compute_reproj_error(Xx, cam, x1, x2):
 
 def transform(aff_hom, Xprj, cams_pr):
     # your code here
+    i = 0
 
     return Xaff, cams_aff
 
