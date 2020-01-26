@@ -1,6 +1,6 @@
 import sys
 import cv2
-
+import numpy as np
 # render 2d/3d plots
 import matplotlib.pyplot as plt 
 from mpl_toolkits.mplot3d import Axes3D
@@ -12,7 +12,7 @@ from mpl_toolkits.mplot3d import Axes3D
     #  1: INFO, show values for different methods
     #  2: VERBOSE, show relevant matrices of pipeline 
     #  3: INSANE, show all values of data structures
-debug = -1 
+debug = 2
 
 if debug > 2:
     np.set_printoptions(threshold=sys.maxsize) #print full arrays
