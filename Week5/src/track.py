@@ -141,4 +141,6 @@ def add_tracks(xi, xj, xri, xrj, i, j, tracks, hs_vs):
 
 def add_pts_tracks(Xaff, x1, x2, tracks, hs_vs):
     # your code here
-    i = 0
+    for i, point in enumerate(x1):
+        track = hs_vs[tuple(point)]
+        track.pt = Xaff[:, i]

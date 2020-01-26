@@ -35,7 +35,7 @@ def estimate_3d_points(P1, P2, xr1, xr2):
     return Xprj
 
 def compute_reproj_error(X, cam): 
-    # your code here 
+
 
     return error
 

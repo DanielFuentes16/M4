@@ -144,7 +144,7 @@ def main(argv):
                 print('  Projective 3D points added to tracks')
 
             # TODO compute projective reprojection error
-            error_prj = compute_reproj_error(Xprj, cams_pr)
+            error_prj = rc.compute_reproj_error(Xprj, cams_pr)
             if h.debug >0:
                 print("    Projective reprojection error:", error_prj)
             
@@ -163,7 +163,7 @@ def main(argv):
                 print('  Affine 3D points added to tracks')
             
             # TODO compute affine reprojection error (reuse your code)
-            error_aff = compute_reproj_error(Xaff, cams_aff)
+            error_aff = rc.compute_reproj_error(Xaff, cams_aff)
             if h.debug >0:
                 print("    Affine reprojection error:", error_aff)
 
