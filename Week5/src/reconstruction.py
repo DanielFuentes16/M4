@@ -7,6 +7,7 @@ import scipy
 from scipy import linalg, matrix
 from scipy.stats import kurtosis, skew
 
+
 def compute_proj_camera(F, i):
     # Result 9.15 of MVG (v = 0, lambda = 1). It assumes P1 = [I|0]
     # your code here
@@ -56,9 +57,15 @@ def compute_reproj_error(Xx, cam, x1, x2):
 
 def transform(aff_hom, Xprj, cams_pr):
     # your code here
-    i = 0
 
+    H = np.linalg.inv(aff_hom)
+    Xaff = aff_hom @ Xprj
+
+    cams_aff1 = (cams_pr[0] @ aff_hom )
+    cams_aff2 = (cams_pr[1] @ H )
+    cams_aff = [cams_aff1, cams_aff2]
     return Xaff, cams_aff
+
 
 def resection(tracks, img):
     # your code here
