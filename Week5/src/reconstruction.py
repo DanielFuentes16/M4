@@ -60,11 +60,10 @@ def transform(aff_hom, Xprj, cams_pr):
     # TODO take into account more cameras. Check that this code works.
     H = np.linalg.inv(aff_hom)
     Xaff = aff_hom @ Xprj
-    cams_aff1 = (cams_pr[0] @ aff_hom )
-    cams_aff2 = (cams_pr[1] @ H )
+    cams_aff1 = (cams_pr[-2] @ H )
+    cams_aff2 = (cams_pr[-1] @ H )
     cams_aff = [cams_aff1, cams_aff2]
     return Xaff, cams_aff
-
 
 def resection(tracks, img):
     # your code here
