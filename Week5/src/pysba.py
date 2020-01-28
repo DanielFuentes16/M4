@@ -145,3 +145,57 @@ class PySBA:
         params, points_3d = self.optimizedParams(res.x, numCameras, numPoints)
 
         return params, points_3d
+
+
+def adapt_format_pysba(tracks, cameras):
+
+    print("_________ ADAPT FORMAT PYSBA! ___________")
+
+    cameraArray = None #TODO get camera Array, more inputs required!
+    points3D = None
+    points2D = None
+    cameraIndices = None
+    point2DIndices = None
+
+    print(tracks[0])
+    print(tracks[0].views)
+    print(tracks[0].ref_views)
+    print(tracks[0].pt)
+    ind_3D_points = 0
+    for track in tracks:
+
+        point_3d = np.array(track.pt[:3])/track.pt[3]
+        if points3D is None:
+            points3D = np.array(point_3d).T
+        else:
+            points3D = np.vstack((points3D, point_3d))
+
+        for camera in track.views:
+            point_2d =  track.views[camera]
+
+            if points2D is None:
+                points2D = np.array(point_2d).T
+            else:
+                points2D = np.vstack((points2D, point_2d))
+
+            if cameraIndices is None:
+                cameraIndices = np.array([camera])
+            else:
+                cameraIndices = np.hstack((cameraIndices, [camera]))
+
+            if point2DIndices is None:
+                point2DIndices = np.array([ind_3D_points])
+            else:
+                point2DIndices = np.hstack((point2DIndices, [ind_3D_points]))
+
+
+        ind_3D_points += 1
+
+    test_camera = cameras[1]
+    print("test camera", cameras[0])
+    print("test camera", cameras[1])
+
+
+
+
+    return cameraArray, points3D, points2D, cameraIndices, point2DIndices
