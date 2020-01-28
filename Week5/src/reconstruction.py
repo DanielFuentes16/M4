@@ -65,24 +65,29 @@ def transform(aff_hom, Xprj, cams_pr):
     cams_aff = [cams_aff1, cams_aff2]
     return Xaff, cams_aff
 
+
 def resection(tracks, img):
     # your code here
     n = 0
-
     print("--------------- RESECTION, image", img)
     for i in range(len(tracks)):
         if img in tracks[i].views:
-            n += 1
+            if abs(tracks[i].pt[3]) > 10**-15:
+                n += 1
     points_2d = np.empty((n, 3))
     points_3d = np.empty((n, 4))
 
     count = 0
     for i in range(len(tracks)):
         if img in tracks[i].views:
-            points_2d[count] = np.hstack((tracks[i].views[img], np.array([1])))
-            points_3d[count] = tracks[i].pt
-            count += 1
+            if abs(tracks[i].pt[3]) > 10 ** -15:
+                points_2d[count] = np.hstack((tracks[i].views[img], np.array([1])))
+                points_3d[count] = tracks[i].pt
+                count += 1
 
+    print("---------- CHECKING points 3d --------------")
+    for i in range(n):
+        print(points_3d[i])
 
     #################### i) a) Normalization ####################################
     t = - np.mean(points_2d, axis=0)
@@ -103,7 +108,7 @@ def resection(tracks, img):
                      [0, 0, 0, 1]])
 
     points_2d = T.dot(points_2d.T).T
-    qpoints_3d = U.dot(points_3d.T).T
+    points_3d = U.dot(points_3d.T).T
 
     print("Normalization done")
 
@@ -122,17 +127,18 @@ def resection(tracks, img):
                              0, 0, 0, 0,
                              -x * X[0], -x * X[1], -x * X[2], -x * X[3]])
 
-    U, S, V = np.linalg.svd(A)
-    p = V.T[:, -1]
+    u, s, v = np.linalg.svd(A)
+    p = v.T[:, -1]
     row1 = [p[0], p[1], p[2], p[3]]
     row2 = [p[4], p[5], p[6], p[7]]
     row3 = [p[8], p[9], p[10], p[11]]
     P = np.vstack((row1, row2, row3))
 
     print("DLT DONE")
-
+    print("--------- P ----------- ")
+    print(P)
     ####################### ii) Minimize geometric error ##############################
-    iteration = 0
+    iteration = 10 # TODO iterations not working, check derivatives.
     rate = 0.001
     while (iteration < 5):
         error = 0
@@ -141,18 +147,23 @@ def resection(tracks, img):
             w = points_2d[i][2]
             x = points_2d[i][0] / w
             y = points_2d[i][1] / w
-
+            p3d = points_3d[i]
+            #print("oints_3d[i]", points_3d[i])
+            p3d /= p3d[3]
+            #print("p3d", p3d)
             p_3d_2d = P.dot(points_3d[i])
+            #print("p_3d_2d", p_3d_2d)
             w2 = p_3d_2d[2]
             x2 = p_3d_2d[0] / w2
             y2 = p_3d_2d[1] / w2
+            #print("x2, y2", x2, y2)
 
             error += (x-x2)**2 + (y-y2)**2
 
-            x3d = points_3d[i][0]
-            y3d = points_3d[i][1]
-            z3d = points_3d[i][2]
-            w3d = points_3d[i][3]
+            x3d = p3d[0]
+            y3d = p3d[1]
+            z3d = p3d[2]
+            w3d = p3d[3]
 
             dP[0][0] += 2 * (x - x2) * x3d / w2
             dP[0][1] += 2 * (x - x2) * y3d / w2
@@ -170,13 +181,19 @@ def resection(tracks, img):
             dP[2][3] += 2 * (x - x2) * x2 * w2 * (-P[2][3]) / w2 + 2 * (y - y2) * y2 * w2 * (-P[2][3]) / w2
 
         P -= dP*rate
-        print("--------- ITERATION ", iterations)
+        print("--------- ITERATION ", iteration)
         print(".... Error: ", error)
         print(".... dP: ", dP)
         print(".... P: ", P)
 
         iteration +=1
-        ######################## Denormalization ###########################################
 
+        ######################## Denormalization ###########################################
+    print ("np.linalg.inv(T)", np.linalg.inv(T))
+    print("P", P)
+    print("U", U)
+    print("shape np.linalg.inv(T)", np.linalg.inv(T).shape)
+    print("shape P", P.shape)
+    print("shape U", U.shape)
     P = np.linalg.inv(T) @ P @ U
     return P
